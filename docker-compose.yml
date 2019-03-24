@@ -1,0 +1,15 @@
+web:
+  build: .
+  ports:
+    - "80:80"
+  links:
+    - db
+  volumes:
+    - .:/var/www/html
+db:
+  image: mysql:5.7
+  environment:
+    MYSQL_ROOT_PASSWORD: bolao123
+    MYSQL_DATABASE: bolao
+  ports: 
+    - "3306:3306"
