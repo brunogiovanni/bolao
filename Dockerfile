@@ -21,6 +21,11 @@ RUN requirements="libmcrypt-dev g++ libicu-dev libpq-dev" \
     && requirementsToRemove="g++" \
     && apt-get purge --auto-remove -y $requirementsToRemove
 
+RUN pecl install xdebug-2.5.0 \
+    && docker-php-ext-enable xdebug
+
+RUN a2enmod rewrite && service apache2 restart
+
 COPY . /var/www/html
 
 EXPOSE 80
