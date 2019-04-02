@@ -36,9 +36,10 @@ class UsersTable extends Table
         $this->setTable('users');
         $this->setDisplayField('nome');
         $this->setPrimaryKey('id');
+        $this->addBehavior('Acl.Acl', ['type' => 'requester']);
 
         $this->belongsTo('Groups', [
-            'foreignKey' => 'groups_id',
+            'foreignKey' => 'group_id',
             'joinType' => 'INNER'
         ]);
     }
@@ -94,7 +95,7 @@ class UsersTable extends Table
     {
         $rules->add($rules->isUnique(['username'], 'Usuário já cadastrado!'));
         $rules->add($rules->isUnique(['email'], 'E-mail já cadastrado!'));
-        $rules->add($rules->existsIn(['groups_id'], 'Groups'));
+        $rules->add($rules->existsIn(['group_id'], 'Groups'));
 
         return $rules;
     }

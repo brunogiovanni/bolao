@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Event\Event;
 
 /**
  * Jogos Controller
@@ -12,6 +13,10 @@ use App\Controller\AppController;
  */
 class JogosController extends AppController
 {
+    public function beforeFilter(Event $event)
+    {
+        parent::beforeFilter($event);
+    }
 
     /**
      * Index method
@@ -20,13 +25,22 @@ class JogosController extends AppController
      */
     public function index()
     {
-        $this->paginate = [
-            'contain' => ['Rodadas', 'Fora', 'Mandante'],
-            'order' => ['rodadas_id' => 'ASC', 'data' => 'asc', 'horario' => 'asc']
-        ];
+        $conditions = [];
+        if (!empty($this->request->getQuery('data'))) {
+            $conditions = ['data' => $this->converterData($this->request->getQuery('data'))];
+        }
+        if (!empty($this->request->getQuery('rodada'))) {
+            array_push($conditions, ['rodadas_id' => $this->request->getQuery('rodada')]);
+        }
+        $this->paginate['conditions'] = $conditions;
+        $this->paginate['contain'] = ['Rodadas', 'Fora', 'Mandante'];
+        $this->paginate['order'] = ['rodadas_id' => 'ASC', 'data' => 'asc', 'horario' => 'asc'];
+        $this->paginate['fields'] = ['Jogos.rodadas_id', 'Jogos.id', 'Jogos.horario', 'Jogos.data', 'Rodadas.numero_rodada', 'Jogos.estadio', 'Mandante.descricao', 'Fora.descricao'];
+        $this->paginate['group'] = ['Jogos.rodadas_id', 'Jogos.id', 'Jogos.horario', 'Jogos.data', 'Rodadas.numero_rodada', 'Jogos.estadio', 'Mandante.descricao', 'Fora.descricao'];
         $jogos = $this->paginate($this->Jogos);
+        $rodadas = $this->Jogos->Rodadas->find('list', ['order' => ['numero_rodada' => 'asc']]);
 
-        $this->set(compact('jogos'));
+        $this->set(compact('jogos', 'rodadas'));
     }
 
     /**
@@ -54,16 +68,20 @@ class JogosController extends AppController
     {
         $jogo = $this->Jogos->newEntity();
         if ($this->request->is('post')) {
+            $data = $this->request->getData();
+            $data['data'] = $this->converterData($data['data']);
             $jogo = $this->Jogos->patchEntity($jogo, $this->request->getData());
             if ($this->Jogos->save($jogo)) {
-                $this->Flash->success(__('The jogo has been saved.'));
+                $this->Flash->success('Registro salvo com sucesso', ['key' => 'jogos']);
 
                 return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('The jogo could not be saved. Please, try again.'));
+            $this->Flash->error('Erro ao salvar registro! Tente novamente', ['key' => 'jogos']);
         }
         $rodadas = $this->Jogos->Rodadas->find('list', ['limit' => 200]);
-        $this->set(compact('jogo', 'rodadas'));
+        $casas = $this->Jogos->Mandante->find('list', ['keyField' => 'id_api']);
+        $visitantes = $this->Jogos->Fora->find('list', ['keyField' => 'id_api']);
+        $this->set(compact('jogo', 'rodadas', 'casas', 'visitantes'));
     }
 
     /**
@@ -75,20 +93,22 @@ class JogosController extends AppController
      */
     public function edit($id = null)
     {
-        $jogo = $this->Jogos->get($id, [
-            'contain' => []
-        ]);
+        $jogo = $this->Jogos->get($id);
         if ($this->request->is(['patch', 'post', 'put'])) {
+            $data = $this->request->getData();
+            $data['data'] = $this->converterData($data['data']);
             $jogo = $this->Jogos->patchEntity($jogo, $this->request->getData());
             if ($this->Jogos->save($jogo)) {
-                $this->Flash->success(__('The jogo has been saved.'));
+                $this->Flash->success('Registro atualizado com sucesso', ['key' => 'jogos']);
 
                 return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('The jogo could not be saved. Please, try again.'));
+            $this->Flash->error('Erro ao atualizar registro! Tente novamente!', ['key' => 'jogos']);
         }
         $rodadas = $this->Jogos->Rodadas->find('list', ['limit' => 200]);
-        $this->set(compact('jogo', 'rodadas'));
+        $casas = $this->Jogos->Mandante->find('list', ['keyField' => 'id_api']);
+        $visitantes = $this->Jogos->Fora->find('list', ['keyField' => 'id_api']);
+        $this->set(compact('jogo', 'rodadas', 'casas', 'visitantes'));
     }
 
     /**
@@ -103,9 +123,9 @@ class JogosController extends AppController
         $this->request->allowMethod(['post', 'delete']);
         $jogo = $this->Jogos->get($id);
         if ($this->Jogos->delete($jogo)) {
-            $this->Flash->success(__('The jogo has been deleted.'));
+            $this->Flash->success('Registro excluído com sucesso', ['key' => 'jogos']);
         } else {
-            $this->Flash->error(__('The jogo could not be deleted. Please, try again.'));
+            $this->Flash->error('Erro ao excluir registro! Tente novamente', ['key' => 'jogos']);
         }
 
         return $this->redirect(['action' => 'index']);
@@ -129,9 +149,9 @@ class JogosController extends AppController
         }
         $entidades = $this->Jogos->newEntities($jogos);
         if ($this->Jogos->saveMany($entidades)) {
-            $this->Flash->success('Sincronizado com sucesso!');
+            $this->Flash->success('Sincronizado com sucesso!', 'jogos');
         } else {
-            $this->Flash->error('Falha ao sincronizar dados!');
+            $this->Flash->error('Falha ao sincronizar dados!', 'jogos');
         }
 
         return $this->redirect(['action' => 'index']);

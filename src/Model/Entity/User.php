@@ -2,6 +2,7 @@
 namespace App\Model\Entity;
 
 use Cake\ORM\Entity;
+use Cake\ORM\TableRegistry;
 use Cake\Auth\DefaultPasswordHasher;
 
 /**
@@ -12,7 +13,7 @@ use Cake\Auth\DefaultPasswordHasher;
  * @property string $password
  * @property string $nome
  * @property string $email
- * @property int $groups_id
+ * @property int $group_id
  *
  * @property \App\Model\Entity\Group $group
  */
@@ -33,7 +34,7 @@ class User extends Entity
         'password' => true,
         'nome' => true,
         'email' => true,
-        'groups_id' => true,
+        'group_id' => true,
         'group' => true
     ];
 
@@ -45,7 +46,7 @@ class User extends Entity
     protected $_hidden = [
         'password'
     ];
-    
+
     /**
      * Método para hashear a senha informada
      *
@@ -55,5 +56,24 @@ class User extends Entity
     protected function _setPassword($password)
     {
         return (new DefaultPasswordHasher)->hash($password);
+    }
+
+    public function parentNode()
+    {
+        if (!$this->id) {
+            return null;
+        }
+        if (isset($this->group_id)) {
+            $groupId = $this->group_id;
+        } else {
+            $Users = TableRegistry::get('Users');
+            $user = $Users->find('all', ['fields' => ['group_id']])->where(['id' => $this->id])->first();
+            $groupId = $user->group_id;
+        }
+        if (!$groupId) {
+            return null;
+        }
+        $Groups = TableRegistry::get('Groups');
+        return $Groups->find('all', ['conditions' => ['id' => $groupId]])->first();
     }
 }

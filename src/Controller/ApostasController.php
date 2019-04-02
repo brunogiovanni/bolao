@@ -21,7 +21,7 @@ class ApostasController extends AppController
     public function index()
     {
         $this->paginate = [
-            'contain' => ['Users', 'Jogos', 'Equipes']
+            'contain' => ['Users', 'Jogos' => ['Mandante', 'Fora'], 'Equipes']
         ];
         $apostas = $this->paginate($this->Apostas);
 

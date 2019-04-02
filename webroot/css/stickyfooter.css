@@ -1,0 +1,32 @@
+html {
+    position: relative;
+    min-height: 100%
+}
+
+body {
+    margin-bottom: 100px
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #ddd;
+    color: #333;
+    margin-bottom: auto;
+    text-align: center
+}
+
+body>.container {}
+
+.container .text-muted {
+    margin: 0;
+    color: #333
+}
+
+.footer>.container {
+    padding-right: 15px;
+    padding-left: 15px;
+    padding-top: 15px
+}

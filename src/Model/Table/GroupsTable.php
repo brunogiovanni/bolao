@@ -34,6 +34,7 @@ class GroupsTable extends Table
         $this->setTable('groups');
         $this->setDisplayField('descricao');
         $this->setPrimaryKey('id');
+        $this->addBehavior('Acl.Acl', ['type' => 'requester']);
     }
 
     /**

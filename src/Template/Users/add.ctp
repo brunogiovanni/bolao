@@ -21,7 +21,7 @@
             echo $this->Form->control('password');
             echo $this->Form->control('nome');
             echo $this->Form->control('email');
-            echo $this->Form->control('groups_id');
+            echo $this->Form->control('group_id');
         ?>
     </fieldset>
     <?= $this->Form->button(__('Submit')) ?>

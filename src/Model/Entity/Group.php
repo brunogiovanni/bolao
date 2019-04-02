@@ -24,4 +24,9 @@ class Group extends Entity
     protected $_accessible = [
         'descricao' => true
     ];
+
+    public function parentNode()
+    {
+        return null;
+    }
 }

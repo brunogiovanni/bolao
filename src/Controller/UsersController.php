@@ -2,6 +2,12 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Event\Event;
+use Cake\Auth\DefaultPasswordHasher;
+use Cake\Mailer\Email;
+use Cake\Utility\Security;
+// use Firebase\JWT\JWT;
+use Cake\Network\Exception\UnauthorizedException;
 
 /**
  * Users Controller
@@ -12,6 +18,13 @@ use App\Controller\AppController;
  */
 class UsersController extends AppController
 {
+
+    public function beforeFilter(Event $event)
+    {
+        parent::beforeFilter($event);
+
+        $this->Auth->allow(['login', '_loginFormulario', '_loginToken', 'logout']);
+    }
 
     /**
      * Index method
@@ -108,5 +121,79 @@ class UsersController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    /**
+     * Função primária de login
+     * Dependendo do tipo de requisição irá chamar login de formulário ou token.
+     */
+    public function login()
+    {
+        // if ($this->request->getParam('_ext') === 'json') {
+        //     $this->_loginToken();
+        // } else {
+        //     $this->_loginFormulario();
+        // }
+        $this->_loginFormulario();
+    }
+
+    /**
+     * Login de formulário para chamadas diretas
+     */
+    private function _loginFormulario()
+    {
+        $this->viewBuilder()->setLayout('login');
+        if ($this->request->is('post')) {
+            $user = $this->Auth->identify();
+            if ($user) {
+                $this->Auth->setUser($user);
+                return $this->redirect($this->Auth->redirectUrl());
+            } else {
+                $this->Flash->error('Usuário ou senha incorretos', ['key' => 'login']);
+            }
+        }
+        $this->render('login');
+    }
+
+    /**
+     * Login com token para conexão via API
+     */
+    // private function _loginToken()
+    // {
+    //     if ($this->request->is('post')) {
+    //         $user = $this->Auth->identify();
+    //         if ($user) {
+    //             $timeantigo = (!empty($user['expira'])) ? strtotime($user['expira']->format('Y-m-d')) : '';
+    //             $hoje = strtotime(date('Y-m-d'));
+    //             if (!empty($timeantigo) && $timeantigo < $hoje) {
+    //                 $this->set(['message' => 'Tempo expirado! Contrate os administradores!', '_serialize' => ['message']]);
+    //             } else {
+    //                 $this->Auth->setUser($user);
+    //                 // $user = $this->dadosUsuario();
+    //                 $setoresUsuario = $this->_listarSetores();
+    //                 $usuario = [
+    //                     'success' => true,
+    //                     'data' => [
+    //                         'token' => JWT::encode([
+    //                             'sub' => $user['id'],
+    //                             'exp' =>  time() + 604800
+    //                         ],
+    //                         Security::salt()),
+    //                         'userId' => $user['id'],
+    //                     ],
+    //                     'message' => 'OK',
+    //                     'setores' => $setoresUsuario];
+    //                 $this->set('usuario', $usuario);
+    //                 $this->set('_serialize', 'usuario');
+    //             }
+    //         } else {
+    //             $this->set(['message' => 'Usuário ou senha inválidos!', '_serialize' => ['message']]);
+    //         }
+    //     }
+    // }
+
+    public function logout()
+    {
+        $this->redirect($this->Auth->logout());
     }
 }
