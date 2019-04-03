@@ -203,7 +203,3 @@ Type::build('timestamp')
 //Inflector::rules('transliteration', ['/å/' => 'aa']);
 
 Configure::write('AclManager.aros', array('Groups', 'Users'));
-
-Plugin::load('Acl', ['bootstrap' => true]);
-Plugin::load('AclManager', ['bootstrap' => true, 'routes' => true]);
-Plugin::load('Cake/Localized');
