@@ -12,20 +12,45 @@ use App\Controller\AppController;
  */
 class ApostasController extends AppController
 {
-
     /**
      * Index method
      *
+     * @param int $jogoId
      * @return \Cake\Http\Response|void
      */
-    public function index()
+    public function index($jogoId)
     {
-        $this->paginate = [
-            'contain' => ['Users', 'Jogos' => ['Mandante', 'Fora'], 'Equipes']
-        ];
+        $this->paginate['contain'] = ['Users', 'Equipes'];
+        $this->paginate['conditions'] = ['jogos_id' => $jogoId];
         $apostas = $this->paginate($this->Apostas);
 
-        $this->set(compact('apostas'));
+        $jogo = $this->Apostas->Jogos->get($jogoId, [
+            'contain' => ['Fora', 'Mandante']
+        ]);
+
+        $prazoHora = date('H:i', strtotime('-3 hours', strtotime($jogo->horario->format('H:i'))));
+        $horaPosJogo = date('H:i', strtotime('+1 hours', strtotime($jogo->horario->format('H:i'))));
+
+        $pontos = $this->_verificarPontosContabilizados($jogoId);
+
+        $this->set(compact('apostas', 'jogo', 'prazoHora', 'horaPosJogo', 'pontos'));
+    }
+
+    private function _verificarPontosContabilizados($jogoId)
+    {
+        $apostas = $this->Apostas->find('all', [
+            'contain' => ['Pontos'],
+            'conditions' => ['jogos_id' => $jogoId]
+        ]);
+
+        $pontos = 0;
+        foreach ($apostas as $aposta) {
+            if (!empty($aposta->ponto)) {
+                $pontos++;
+            }
+        }
+
+        return $pontos;
     }
 
     /**
@@ -47,24 +72,60 @@ class ApostasController extends AppController
     /**
      * Add method
      *
+     * @param int $jogoId
      * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
      */
-    public function add()
+    public function add($jogoId)
     {
-        $aposta = $this->Apostas->newEntity();
-        if ($this->request->is('post')) {
-            $aposta = $this->Apostas->patchEntity($aposta, $this->request->getData());
-            if ($this->Apostas->save($aposta)) {
-                $this->Flash->success(__('The aposta has been saved.'));
+        $jogo = $this->Apostas->Jogos->get($jogoId, [
+            'contain' => ['Fora', 'Mandante']
+        ]);
+        $prazoHora = date('H:i', strtotime('-3 hours', strtotime($jogo->horario->format('H:i'))));
+        if ((strtotime(date('Y-m-d')) <= strtotime($jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) < strtotime($prazoHora))) {
+            $quantidadeApostas = $this->_verificarApostasUsuario($jogoId);
+            if ($quantidadeApostas <= 0) {
+                $aposta = $this->Apostas->newEntity();
+                if ($this->request->is('post')) {
+                    $data = $this->request->getData();
+                    $data['users_id'] = $this->Auth->user('id');
+                    $data['jogos_id'] = $jogoId;
+                    $aposta = $this->Apostas->patchEntity($aposta, $data);
+                    if ($this->Apostas->save($aposta)) {
+                        $this->Flash->success('Aposta salva com sucesso!', ['key' => 'apostas']);
 
-                return $this->redirect(['action' => 'index']);
+                        return $this->redirect(['action' => 'index', $jogoId]);
+                    }
+                    $this->Flash->error('Erro ao salvar aposta! Tente novamente!', ['key' => 'apostas']);
+                }
+                $equipes = [
+                    $jogo->fora->id => $jogo->fora->descricao,
+                    $jogo->mandante->id => $jogo->mandante->descricao,
+                ];
+                $this->set(compact('aposta', 'users', 'jogo', 'equipes'));
+            } else {
+                $this->Flash->error('Já fez uma aposta para este jogo! Não é possível realizar outra!', ['key' => 'apostas']);
+                return $this->redirect(['action' => 'index', $jogoId]);
             }
-            $this->Flash->error(__('The aposta could not be saved. Please, try again.'));
+        } else {
+            $this->Flash->info('Apostas encerradas', ['key' => 'apostas']);
+            $this->redirect(['action' => 'index', $jogoId]);
         }
-        $users = $this->Apostas->Users->find('list', ['limit' => 200]);
-        $jogos = $this->Apostas->Jogos->find('list', ['limit' => 200]);
-        $equipes = $this->Apostas->Equipes->find('list', ['limit' => 200]);
-        $this->set(compact('aposta', 'users', 'jogos', 'equipes'));
+    }
+
+    /**
+     * Verifica se usuário já realizou alguma aposta para o jogo selecionado
+     *
+     * @param int $jogoId
+     *
+     * @return int Quantidade de apostas
+     */
+    private function _verificarApostasUsuario($jogoId)
+    {
+        $apostas = $this->Apostas->find('all', [
+            'conditions' => ['users_id' => $this->Auth->user('id'), 'jogos_id' => $jogoId]
+        ]);
+
+        return $apostas->count();
     }
 
     /**
@@ -77,21 +138,32 @@ class ApostasController extends AppController
     public function edit($id = null)
     {
         $aposta = $this->Apostas->get($id, [
-            'contain' => []
+            'contain' => ['Jogos' => ['Mandante', 'Fora']]
         ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $aposta = $this->Apostas->patchEntity($aposta, $this->request->getData());
-            if ($this->Apostas->save($aposta)) {
-                $this->Flash->success(__('The aposta has been saved.'));
 
-                return $this->redirect(['action' => 'index']);
+        $prazoHora = date('H:i', strtotime('-3 hours', strtotime($aposta->jogo->horario->format('H:i'))));
+        if ((strtotime(date('Y-m-d')) <= strtotime($aposta->jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) < strtotime($prazoHora))) {
+            if ($this->request->is(['patch', 'post', 'put'])) {
+                $data = $this->request->getData();
+                $data['users_id'] = $this->Auth->user('id');
+                $data['jogos_id'] = $aposta->jogos_id;
+                $aposta = $this->Apostas->patchEntity($aposta, $data);
+                if ($this->Apostas->save($aposta)) {
+                    $this->Flash->success('Aposta atualizada com sucesso!', ['key' => 'apostas']);
+
+                    return $this->redirect(['action' => 'index', $aposta->jogos_id]);
+                }
+                $this->Flash->error('Erro ao atualizar aposta! Tente novamente!', ['key' => 'apostas']);
             }
-            $this->Flash->error(__('The aposta could not be saved. Please, try again.'));
+            $equipes = [
+                $aposta->jogo->fora->id => $aposta->jogo->fora->descricao,
+                $aposta->jogo->mandante->id => $aposta->jogo->mandante->descricao,
+            ];
+            $this->set(compact('aposta', 'equipes'));
+        } else {
+            $this->Flash->info('Apostas encerradas!', ['key' => 'apostas']);
+            $this->redirect(['action' => 'index', $aposta->jogos_id]);
         }
-        $users = $this->Apostas->Users->find('list', ['limit' => 200]);
-        $jogos = $this->Apostas->Jogos->find('list', ['limit' => 200]);
-        $equipes = $this->Apostas->Equipes->find('list', ['limit' => 200]);
-        $this->set(compact('aposta', 'users', 'jogos', 'equipes'));
     }
 
     /**
@@ -104,13 +176,22 @@ class ApostasController extends AppController
     public function delete($id = null)
     {
         $this->request->allowMethod(['post', 'delete']);
-        $aposta = $this->Apostas->get($id);
-        if ($this->Apostas->delete($aposta)) {
-            $this->Flash->success(__('The aposta has been deleted.'));
-        } else {
-            $this->Flash->error(__('The aposta could not be deleted. Please, try again.'));
-        }
+        $aposta = $this->Apostas->get($id, [
+            'contain' => ['Jogos' => ['Mandante', 'Fora']]
+        ]);
 
-        return $this->redirect(['action' => 'index']);
+        $prazoHora = date('H:i', strtotime('-3 hours', strtotime($aposta->jogo->horario->format('H:i'))));
+        if ((strtotime(date('Y-m-d')) <= strtotime($aposta->jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) < strtotime($prazoHora))) {
+            if ($this->Apostas->delete($aposta)) {
+                $this->Flash->success('Aposta excluída com sucesso!', ['key' => 'apostas']);
+            } else {
+                $this->Flash->error('Erro ao excluir aposta!', ['key' => 'apostas']);
+            }
+
+            return $this->redirect(['action' => 'index', $aposta->jogos_id]);
+        } else {
+            $this->Flash->info('Apostas encerradas!', ['key' => 'apostas']);
+            return $this->redirect(['action' => 'index', $aposta->jogos_id]);
+        }
     }
 }

@@ -28,6 +28,8 @@ class Ponto extends Entity
      */
     protected $_accessible = [
         'pontos' => true,
+        'users_id' => true,
+        'apostas_id' => true,
         'user' => true,
         'aposta' => true
     ];

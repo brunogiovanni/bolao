@@ -48,6 +48,7 @@
                     <th scope="col">Id</th>
                     <th scope="col" class="actions">Ações</th>
                 <?php endif; ?>
+                <th scope="col" class="actions"></th>
             </tr>
         </thead>
         <tbody>
@@ -68,6 +69,9 @@
                         <?= $this->Form->postLink('<i class="fas fa-trash-alt text-danger"></i>', ['action' => 'delete', $jogo->id], ['confirm' => __('Deseja excluir o registro # {0}?', $jogo->id), 'escape' => false, 'title' => 'Excluir registro']) ?>
                     </td>
                 <?php endif; ?>
+                <td>
+                    <?php echo $this->Html->link('Apostas', ['controller' => 'Apostas', 'action' => 'index', $jogo->id], ['title' => 'Apostas']); ?>
+                </td>
             </tr>
             <?php endforeach; ?>
         </tbody>

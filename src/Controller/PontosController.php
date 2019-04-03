@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Event\Event;
 
 /**
  * Pontos Controller
@@ -12,20 +13,31 @@ use App\Controller\AppController;
  */
 class PontosController extends AppController
 {
+    public function beforeFilter(Event $event)
+    {
+        parent::beforeFilter($event);
+        $this->loadModel('Regras');
+    }
 
     /**
      * Index method
      *
      * @return \Cake\Http\Response|void
      */
-    public function index()
+    public function index($jogoId = null)
     {
-        $this->paginate = [
-            'contain' => ['Users', 'Apostas']
-        ];
+        $jogo = [];
+        $this->paginate['fields'] = ['Pontos.id', 'Pontos.pontos', 'Users.nome', 'Apostas.id', 'Jogos.id', 'Fora.brasao', 'Fora.descricao', 'Mandante.brasao', 'Mandante.descricao'];
+        $this->paginate['contain'] = ['Users', 'Apostas' => ['Jogos' => ['Fora', 'Mandante']]];
+        if (!empty($jogoId)) {
+            $this->paginate['conditions'] = ['Apostas.jogos_id' => $jogoId];
+            $jogo = $this->Pontos->Apostas->Jogos->get($jogoId, [
+                'contain' => ['Fora', 'Mandante']
+            ]);
+        }
         $pontos = $this->paginate($this->Pontos);
 
-        $this->set(compact('pontos'));
+        $this->set(compact('pontos', 'jogo'));
     }
 
     /**
@@ -42,6 +54,43 @@ class PontosController extends AppController
         ]);
 
         $this->set('ponto', $ponto);
+    }
+
+    public function contabilizarPontos($jogoId)
+    {
+        $this->request->allowMethod(['post']);
+
+        // $regras = $this->Regras->find('all');
+        $apostas = $this->Pontos->Apostas->find('all', [
+            'conditions' => ['jogos_id' => $jogoId]
+        ]);
+        $jogo = $this->Pontos->Apostas->Jogos->get($jogoId);
+        $data = [];
+        foreach ($apostas as $aposta) {
+            $golsApostaVisitante = str_replace('x', '', strstr($aposta->aposta, 'x'));
+            $golsApostaMandante = str_replace('x'.$golsApostaVisitante, '', $aposta->aposta);
+            $golsVisitante = str_replace('x',  '', strstr($jogo->placar_final, 'x'));
+            $golsMandante = str_replace('x'.$golsVisitante, '', $jogo->placar_final);
+
+            if ($aposta->equipes_id === $jogo->vencedor && $aposta->aposta === $jogo->placar_final) {
+                $data[] = ['pontos' => 30, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+            } elseif ($aposta->aposta === $jogo->placar_final) {
+                $data[] = ['pontos' => 20, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+            } elseif ($aposta->equipes_id === $jogo->vencedor && ($golsApostaMandante === $golsMandante || $golsApostaVisitante === $golsVisitante)) {
+                $data[] = ['pontos' => 10, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+            } elseif ($golsApostaMandante === $golsMandante || $golsApostaVisitante === $golsVisitante) {
+                $data[] = ['pontos' => 5, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+            } else {
+                $data[] = ['pontos' => 0, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+            }
+        }
+        $pontos = $this->Pontos->newEntities($data);
+        if ($this->Pontos->saveMany($pontos)) {
+            $this->Flash->success('Pontos contabilizados como sucesso', ['key' => 'pontos']);
+            return $this->redirect(['action' => 'index', $jogoId]);
+        }
+        $this->Flash->error('Erro ao contabilizar pontos! Tente novamente!', ['key' => 'apostas']);
+        return $this->redirect(['controller' => 'Apostas', 'action' => 'index', $jogoId]);
     }
 
     /**

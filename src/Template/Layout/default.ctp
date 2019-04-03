@@ -12,11 +12,15 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 
-    <?php echo $this->Html->css('stickyfooter.css'); ?>
+    <?php
+    echo $this->Html->css([
+        'stickyfooter.css',
+        'cake.css'
+    ]);
+    ?>
 
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
-    <?= $this->fetch('script') ?>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -36,9 +40,9 @@
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <?php
-                            echo $this->Html->link('Apostas', ['controller' => 'Apostas', 'action' => 'index'], ['class' => 'dropdown-item']);
-                            echo $this->Html->link('Pontos', ['controller' => 'Pontos', 'action' => 'index'], ['class' => 'dropdown-item']);
+                            // echo $this->Html->link('Apostas', ['controller' => 'Apostas', 'action' => 'index'], ['class' => 'dropdown-item']);
                             echo $this->Html->link('Partidas', ['controller' => 'Jogos', 'action' => 'index'], ['class' => 'dropdown-item']);
+                            echo $this->Html->link('Pontos', ['controller' => 'Pontos', 'action' => 'index'], ['class' => 'dropdown-item']);
                             ?>
                         </div>
                     </li>

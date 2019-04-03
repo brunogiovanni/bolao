@@ -13,6 +13,8 @@ use Cake\ORM\Entity;
  * @property int $rodadas_id
  * @property int $visitante
  * @property int $casa
+ * @property string $placar_final
+ * @property int $vencedor
  *
  * @property \App\Model\Entity\Rodada $rodada
  */
@@ -35,6 +37,8 @@ class Jogo extends Entity
         'rodadas_id' => true,
         'visitante' => true,
         'casa' => true,
+        'placar_final' => true,
+        'vencedor' => true,
         'rodada' => true
     ];
 }

@@ -51,6 +51,10 @@ class ApostasTable extends Table
             'foreignKey' => 'equipes_id',
             'joinType' => 'INNER'
         ]);
+
+        $this->hasOne('Pontos', [
+            'foreignKey' => 'apostas_id'
+        ]);
     }
 
     /**
@@ -85,7 +89,7 @@ class ApostasTable extends Table
     {
         $rules->add($rules->existsIn(['users_id'], 'Users'));
         $rules->add($rules->existsIn(['jogos_id'], 'Jogos'));
-        $rules->add($rules->existsIn(['equipes_id'], 'Equipes'));
+        // $rules->add($rules->existsIn(['equipes_id'], 'Equipes'));
 
         return $rules;
     }

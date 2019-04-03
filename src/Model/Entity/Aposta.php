@@ -31,6 +31,8 @@ class Aposta extends Entity
     protected $_accessible = [
         'aposta' => true,
         'equipes_id' => true,
+        'users_id' => true,
+        'jogos_id' => true,
         'user' => true,
         'jogo' => true,
         'equipe' => true

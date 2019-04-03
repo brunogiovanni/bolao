@@ -84,12 +84,21 @@ class JogosTable extends Table
             ->allowEmptyString('estadio', false);
 
         $validator
+            ->scalar('placar_final')
+            ->maxLength('placar_final', 5)
+            ->allowEmptyString('placar_final', true);
+
+        $validator
             ->integer('visitante')
             ->allowEmptyString('visitante', 'create');
 
         $validator
             ->integer('casa')
             ->allowEmptyString('casa', 'create');
+
+        $validator
+            ->integer('vencedor')
+            ->allowEmptyString('vencedor', 'create');
 
         return $validator;
     }

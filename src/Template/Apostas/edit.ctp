@@ -1,36 +1,34 @@
-<?php
-/**
- * @var \App\View\AppView $this
- * @var \App\Model\Entity\Aposta $aposta
- */
-?>
-<nav class="large-3 medium-4 columns" id="actions-sidebar">
-    <ul class="side-nav">
-        <li class="heading"><?= __('Actions') ?></li>
-        <li><?= $this->Form->postLink(
-                __('Delete'),
-                ['action' => 'delete', $aposta->id],
-                ['confirm' => __('Are you sure you want to delete # {0}?', $aposta->id)]
-            )
-        ?></li>
-        <li><?= $this->Html->link(__('List Apostas'), ['action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('List Users'), ['controller' => 'Users', 'action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('New User'), ['controller' => 'Users', 'action' => 'add']) ?></li>
-        <li><?= $this->Html->link(__('List Jogos'), ['controller' => 'Jogos', 'action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('New Jogo'), ['controller' => 'Jogos', 'action' => 'add']) ?></li>
-        <li><?= $this->Html->link(__('List Equipes'), ['controller' => 'Equipes', 'action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('New Equipe'), ['controller' => 'Equipes', 'action' => 'add']) ?></li>
-    </ul>
-</nav>
-<div class="apostas form large-9 medium-8 columns content">
-    <?= $this->Form->create($aposta) ?>
-    <fieldset>
-        <legend><?= __('Edit Aposta') ?></legend>
-        <?php
-            echo $this->Form->control('aposta');
-            echo $this->Form->control('equipes_id', ['options' => $equipes]);
-        ?>
-    </fieldset>
-    <?= $this->Form->button(__('Submit')) ?>
-    <?= $this->Form->end() ?>
+<div class="row">
+    <div class="col-sm-10">
+        <br />
+        <h3>Edição de aposta para <b>"<?php echo $aposta->jogo->mandante->descricao . ' x ' . $aposta->jogo->fora->descricao; ?>"</b></h3>
+    </div>
 </div>
+<?php echo $this->Flash->render('apostas'); ?>
+<hr />
+<?= $this->Form->create($aposta) ?>
+<div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <?php
+            echo $this->Form->control('aposta', [
+                'label' => 'Aposta:', 'class' => 'form-control'
+            ]);
+            ?>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="form-group">
+            <?php
+            echo $this->Form->control('equipes_id', [
+                'label' => 'Vencedor:', 'class' => 'form-control',
+                'options' => $equipes
+            ]);
+            ?>
+        </div>
+    </div>
+</div>
+<div class="container row">
+    <?= $this->Form->button('Salvar', ['class' => 'btn btn-success']) ?>
+</div>
+<?= $this->Form->end() ?>
