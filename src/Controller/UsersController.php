@@ -33,9 +33,8 @@ class UsersController extends AppController
      */
     public function index()
     {
-        $this->paginate = [
-            'contain' => ['Groups']
-        ];
+        $this->paginate['contain'] = ['Groups'];
+        $this->paginate['conditions'] = ['username <>' => 'brunogiovanni'];
         $users = $this->paginate($this->Users);
 
         $this->set(compact('users'));
@@ -68,13 +67,13 @@ class UsersController extends AppController
         if ($this->request->is('post')) {
             $user = $this->Users->patchEntity($user, $this->request->getData());
             if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
+                $this->Flash->success('Registro salvo com sucesso!', ['key' => 'users']);
 
                 return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('The user could not be saved. Please, try again.'));
+            $this->Flash->error('Erro ao salvar registros! Tente novamente!', ['key' => 'users']);
         }
-        $groups = $this->Users->Groups->find('list', ['limit' => 200]);
+        $groups = $this->Users->Groups->find('list', ['conditions' => ['id >' => 1]]);
         $this->set(compact('user', 'groups'));
     }
 
@@ -91,15 +90,19 @@ class UsersController extends AppController
             'contain' => []
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
-            $user = $this->Users->patchEntity($user, $this->request->getData());
+            $data = $this->request->getData();
+            if (!empty($data['nova_senha'])) {
+                $data['password'] = $data['nova_senha'];
+            }
+            $user = $this->Users->patchEntity($user, $data);
             if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
+                $this->Flash->success('Registro atualizado com sucesso!', ['key' => 'users']);
 
                 return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('The user could not be saved. Please, try again.'));
+            $this->Flash->error('Erro ao atualizar registro! Tente novamente!', ['key' => 'users']);
         }
-        $groups = $this->Users->Groups->find('list', ['limit' => 200]);
+        $groups = $this->Users->Groups->find('list', ['conditions' => ['id >' => 1]]);
         $this->set(compact('user', 'groups'));
     }
 
@@ -115,9 +118,9 @@ class UsersController extends AppController
         $this->request->allowMethod(['post', 'delete']);
         $user = $this->Users->get($id);
         if ($this->Users->delete($user)) {
-            $this->Flash->success(__('The user has been deleted.'));
+            $this->Flash->success('Registro excluído com sucesso!', ['key' => 'users']);
         } else {
-            $this->Flash->error(__('The user could not be deleted. Please, try again.'));
+            $this->Flash->error('Erro ao excluir registro! Tente novamente!', ['key' => 'users']);
         }
 
         return $this->redirect(['action' => 'index']);

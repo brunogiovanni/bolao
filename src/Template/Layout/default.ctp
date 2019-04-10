@@ -34,29 +34,41 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/">Início</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Jogos
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <?php
-                            // echo $this->Html->link('Apostas', ['controller' => 'Apostas', 'action' => 'index'], ['class' => 'dropdown-item']);
-                            echo $this->Html->link('Partidas', ['controller' => 'Jogos', 'action' => 'index'], ['class' => 'dropdown-item']);
-                            echo $this->Html->link('Pontos', ['controller' => 'Pontos', 'action' => 'index'], ['class' => 'dropdown-item']);
-                            ?>
-                        </div>
-                    </li>
-                    <?php if (in_array($usuario['group_id'], [1,2])) : ?>
+                    <?php foreach ($menuPai as $pai) : ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Administração
+                                <?php echo $pai->nome; ?>
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <?php foreach ($menuLateral as $menu) : ?>
+                                    <?php if ($menu->parent_id === $pai->id) : ?>
+                                        <?php
+                                        if ($menu->tipo === 'A') {
+                                            echo $this->Html->link($menu->nome, [
+                                                'controller' => $parentMenu[$menu->id]['alias'],
+                                                'action' => $menu->aco->alias
+                                            ], ['class' => 'dropdown-item']);
+                                        } else {
+                                            echo $this->Html->link($menu->nome, [
+                                                'controller' => $menu->aco->alias,
+                                                'action' => 'index'
+                                            ], ['class' => 'dropdown-item']);
+                                        }
+                                        ?>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </div>
+                        </li>
+                    <?php endforeach; ?>
+                    <?php if (in_array($usuario['group_id'], [1])) : ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Desenvolvedores
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <?php
-                                echo $this->Html->link('Usuários', ['controller' => 'Users', 'action' => 'index'], ['class' => 'dropdown-item']);
-                                echo $this->Html->link('Regras', ['controller' => 'Regras', 'action' => 'index'], ['class' => 'dropdown-item']);
-                                echo $this->Html->link('Equipes', ['controller' => 'Equipes', 'action' => 'index'], ['class' => 'dropdown-item']);
-                                echo $this->Html->link('Rodadas', ['controller' => 'Rodadas', 'action' => 'index'], ['class' => 'dropdown-item']);
+                                echo $this->Html->link('Menus', ['controller' => 'Menus', 'action' => 'index'], ['class' => 'dropdown-item']);
+                                echo $this->Html->link('Grupos', ['controller' => 'Groups', 'action' => 'index'], ['class' => 'dropdown-item']);
                                 ?>
                             </div>
                         </li>
@@ -83,7 +95,6 @@
     </nav>
 
     <div class="container">
-        <?= $this->Flash->render() ?>
         <?= $this->fetch('content') ?>
     </div>
 

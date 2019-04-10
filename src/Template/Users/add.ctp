@@ -1,29 +1,46 @@
-<?php
-/**
- * @var \App\View\AppView $this
- * @var \App\Model\Entity\User $user
- */
-?>
-<nav class="large-3 medium-4 columns" id="actions-sidebar">
-    <ul class="side-nav">
-        <li class="heading"><?= __('Actions') ?></li>
-        <li><?= $this->Html->link(__('List Users'), ['action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('List Groups'), ['controller' => 'Groups', 'action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('New Group'), ['controller' => 'Groups', 'action' => 'add']) ?></li>
-    </ul>
-</nav>
-<div class="users form large-9 medium-8 columns content">
-    <?= $this->Form->create($user) ?>
-    <fieldset>
-        <legend><?= __('Add User') ?></legend>
-        <?php
-            echo $this->Form->control('username');
-            echo $this->Form->control('password');
-            echo $this->Form->control('nome');
-            echo $this->Form->control('email');
-            echo $this->Form->control('group_id');
-        ?>
-    </fieldset>
-    <?= $this->Form->button(__('Submit')) ?>
-    <?= $this->Form->end() ?>
+<div class="row">
+    <div class="col-sm-4">
+        <br />
+        <h3>Cadastro de usuário</h3>
+    </div>
+    <div class="col-sm-6">
+        <br />
+        <?php echo $this->Flash->render('users'); ?>
+    </div>
 </div>
+<hr />
+<?= $this->Form->create($user) ?>
+<div class="row">
+    <div class="col-sm-4">
+        <div class="form-group">
+            <?php echo $this->Form->control('username', ['label' => 'Usuário:', 'class' => 'form-control']); ?>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-group">
+            <?php echo $this->Form->control('password', ['label' => 'Senha:', 'class' => 'form-control']); ?>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-group">
+            <?php echo $this->Form->control('nome', ['label' => 'Nome:', 'class' => 'form-control']); ?>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-group">
+            <?php echo $this->Form->control('email', ['label' => 'E-mail:', 'class' => 'form-control']); ?>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-group">
+            <?php echo $this->Form->control('group_id', ['label' => 'Grupo:', 'class' => 'form-control']); ?>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="container">
+        <?= $this->Form->button('Salvar', ['class' => 'btn btn-success']) ?>
+        <?= $this->Html->link('Cancelar', ['action' => 'index'], ['class' => 'btn btn-warning']) ?>
+    </div>
+</div>
+<?= $this->Form->end() ?>

@@ -127,7 +127,7 @@ class AppController extends Controller
     {
         parent::beforeFilter($event);
         if (!empty($this->Auth->user('id')) && $this->request->getParam('_ext') !== 'json') {
-            // $this->_montarMenu();
+            $this->_montarMenu();
             $this->set('usuario', $this->Auth->user());
         }
     }
@@ -138,18 +138,17 @@ class AppController extends Controller
     private function _montarMenu()
     {
         $this->loadModel('Menus');
-
         $permissoes = $this->Menus->Acos->Aros->find('all', [
             'conditions' => [
-                'foreign_key' => $this->Auth->user('grupos_id'),
-                'model' => 'Grupos'
+                'foreign_key' => $this->Auth->user('group_id'),
+                'model' => 'Groups'
             ],
             'contain' => ['Acos']
         ])->first();
         $menusPais = $this->Menus->find('all', [
             'conditions' => ['tipo' => 'D']
         ]);
-        if ($this->Auth->user('grupos_id') === 1) {
+        if ($this->Auth->user('group_id') === 1) {
             $menus = $this->Menus->find('all', [
                 // 'conditions' => ['tipo' => 'C'],
                 'contain' => ['Acos']
