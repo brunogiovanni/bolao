@@ -47,10 +47,6 @@ class ApostasTable extends Table
             'foreignKey' => 'jogos_id',
             'joinType' => 'INNER'
         ]);
-        $this->belongsTo('Equipes', [
-            'foreignKey' => 'equipes_id',
-            'joinType' => 'INNER'
-        ]);
 
         $this->hasOne('Pontos', [
             'foreignKey' => 'apostas_id'
@@ -70,10 +66,16 @@ class ApostasTable extends Table
             ->allowEmptyString('id', 'create');
 
         $validator
-            ->scalar('aposta')
-            ->maxLength('aposta', 50)
-            ->requirePresence('aposta', 'create')
-            ->allowEmptyString('aposta', false);
+            ->integer('placar1')
+            ->allowEmptyString('placar1', 'create');
+
+        $validator
+            ->integer('placar2')
+            ->allowEmptyString('placar2', 'create');
+
+        $validator
+            ->integer('vencedor')
+            ->allowEmptyString('vencedor', 'create');
 
         return $validator;
     }
@@ -89,7 +91,6 @@ class ApostasTable extends Table
     {
         $rules->add($rules->existsIn(['users_id'], 'Users'));
         $rules->add($rules->existsIn(['jogos_id'], 'Jogos'));
-        // $rules->add($rules->existsIn(['equipes_id'], 'Equipes'));
 
         return $rules;
     }

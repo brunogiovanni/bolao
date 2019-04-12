@@ -17,9 +17,9 @@
     <div class="col-sm-2 text-right">
         <br />
         <?php
-        if ((strtotime(date('Y-m-d')) <= strtotime($jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) < strtotime($prazoHora))) {
+        if ((strtotime(date('Y-m-d')) <= strtotime($jogo->data->format('Y-m-d'))) && (strtotime(date('Y-m-d H:i')) < strtotime($prazoHora))) {
             echo $this->Html->link('Novo', ['action' => 'add', $jogo->id], ['class' => 'btn btn-primary', 'title' => 'Nova aposta']);
-        } elseif ((strtotime(date('Y-m-d')) >= strtotime($jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) >= strtotime($horaPosJogo)) && $pontos === 0) {
+        } elseif ((strtotime(date('Y-m-d')) >= strtotime($jogo->data->format('Y-m-d'))) && (strtotime(date('Y-m-d H:i')) >= strtotime($horaPosJogo)) && $pontos === 0) {
             echo $this->Form->postLink('Contabilizar pontos', [
                 'controller' => 'Pontos',
                 'action' => 'contabilizarPontos', $jogo->id], [
@@ -27,7 +27,7 @@
                 'title' => 'Contabilizar pontos' , 'escape' => false,
                 'class' => 'btn btn-info'
             ]);
-        } else {
+        } elseif ($pontos > 0) {
             echo $this->Html->link('Ver pontos do jogo', ['controller' => 'Pontos', 'action' => 'index', $jogo->id], [
                 'class' => 'btn btn-info', 'title' => 'Ver pontos do jogo'
             ]);
@@ -53,7 +53,7 @@
                 <td><?= h($aposta->aposta) ?></td>
                 <td><?= $aposta->has('equipe') ? $aposta->equipe->descricao : '' ?></td>
                 <td class="actions">
-                    <?php if ((strtotime(date('Y-m-d')) <= strtotime($jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) < strtotime($prazoHora))) : ?>
+                    <?php if ((strtotime(date('Y-m-d')) <= strtotime($jogo->data->format('Y-m-d'))) && (strtotime(date('Y-m-d H:i')) < strtotime($prazoHora))) : ?>
                             <?= $this->Html->link('<i class="fas fa-edit"></i>', [
                                 'action' => 'edit', $aposta->id], [
                                     'title' => 'Editar registro' , 'escape' => false

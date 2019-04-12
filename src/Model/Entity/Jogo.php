@@ -31,6 +31,7 @@ class Jogo extends Entity
      * @var array
      */
     protected $_accessible = [
+        'id' => true,
         'data' => true,
         'horario' => true,
         'estadio' => true,

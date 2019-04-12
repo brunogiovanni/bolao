@@ -67,19 +67,14 @@ class PontosController extends AppController
         $jogo = $this->Pontos->Apostas->Jogos->get($jogoId);
         $data = [];
         foreach ($apostas as $aposta) {
-            $golsApostaVisitante = str_replace('x', '', strstr($aposta->aposta, 'x'));
-            $golsApostaMandante = str_replace('x'.$golsApostaVisitante, '', $aposta->aposta);
-            $golsVisitante = str_replace('x',  '', strstr($jogo->placar_final, 'x'));
-            $golsMandante = str_replace('x'.$golsVisitante, '', $jogo->placar_final);
-
-            if ($aposta->equipes_id === $jogo->vencedor && $aposta->aposta === $jogo->placar_final) {
-                $data[] = ['pontos' => 30, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
-            } elseif ($aposta->aposta === $jogo->placar_final) {
-                $data[] = ['pontos' => 20, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
-            } elseif ($aposta->equipes_id === $jogo->vencedor && ($golsApostaMandante === $golsMandante || $golsApostaVisitante === $golsVisitante)) {
+            if ($aposta->placar1 === $jogo->placar1 && $aposta->placar2 === $jogo->placar2) {
                 $data[] = ['pontos' => 10, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
-            } elseif ($golsApostaMandante === $golsMandante || $golsApostaVisitante === $golsVisitante) {
+            } elseif (($aposta->placar1 === $jogo->placar1 || $aposta->placar2 === $jogo->placar2) && ((!empty($jogo->vencedor) && $aposta->vencedor !== 0) && $jogo->vencedor === $aposta->vencedor)) {
+                $data[] = ['pontos' => 7, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+            } elseif ((!empty($jogo->vencedor) && $aposta->vencedor !== 0) && ($jogo->vencedor === $aposta->vencedor)) {
                 $data[] = ['pontos' => 5, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+            } elseif ($aposta->placar1 === $jogo->placar1 || $aposta->placar2 === $jogo->placar2) {
+                $data[] = ['pontos' => 2, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
             } else {
                 $data[] = ['pontos' => 0, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
             }

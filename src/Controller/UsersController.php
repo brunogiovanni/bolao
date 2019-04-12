@@ -23,7 +23,7 @@ class UsersController extends AppController
     {
         parent::beforeFilter($event);
 
-        $this->Auth->allow(['login', '_loginFormulario', '_loginToken', 'logout']);
+        $this->Auth->allow(['login', '_loginFormulario', 'logout', 'addPublic', 'recuperarSenha']);
     }
 
     /**
@@ -198,5 +198,89 @@ class UsersController extends AppController
     public function logout()
     {
         $this->redirect($this->Auth->logout());
+    }
+
+
+    public function addPublic()
+    {
+        $this->viewBuilder()->setLayout('login');
+        $user = $this->Users->newEntity();
+        if ($this->request->is('post')) {
+            $data = $this->request->getData();
+            $data['group_id'] = 3;
+            $user = $this->Users->patchEntity($user, $data);
+            if ($this->Users->save($user)) {
+                $this->Flash->success('Registro salvo com sucesso!', ['key' => 'login']);
+
+                return $this->redirect(['action' => 'login']);
+            }
+            $this->Flash->error('Erro ao salvar registros! Tente novamente!', ['key' => 'login']);
+        }
+        $this->set(compact('user'));
+    }
+
+    public function recuperarSenha()
+    {
+        if ($this->request->is('post')) {
+            $user = $this->Users->find('all', [
+                'conditions' => ['email' => $this->request->getData('email')]
+            ])->first();
+            if ($user) {
+                $senha = $this->_geraSenha();
+                $user->password = $senha;
+
+                if ($this->Users->save($user)) {
+                    $email = new Email('default');
+                    $mensagem = 'Seu usuário é: ' . $user->username . '<br>';
+                    $mensagem .= 'Sua nova senha é: ' . $senha;
+                    $email->to($user->email)
+                        ->subject('Recuperação de senha')
+                        ->send($mensagem);
+                }
+            } else {
+                $this->Flash->error('Este e-mail não está cadastrado!', ['key' => 'login']);
+            }
+        }
+        $this->viewBuilder()->setLayout('login');
+    }
+
+    /**
+     * Função para gerar senhas aleatórias
+     *
+     *
+     * @param integer $tamanho Tamanho da senha a ser gerada
+     * @param boolean $maiusculas Se terá letras maiúsculas
+     * @param boolean $numeros Se terá números
+     * @param boolean $simbolos Se terá símbolos
+     *
+     * @return string A senha gerada
+     */
+    private function _geraSenha($tamanho = 8, $maiusculas = true, $numeros = true, $simbolos = false)
+    {
+        $lmin = 'abcdefghijklmnopqrstuvwxyz';
+        $lmai = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $num = '1234567890';
+        $simb = '!@#$%*-';
+        $retorno = '';
+        $caracteres = '';
+        $caracteres .= $lmin;
+
+        if ($maiusculas) {
+            $caracteres .= $lmai;
+        }
+        if ($numeros) {
+            $caracteres .= $num;
+        }
+        if ($simbolos) {
+            $caracteres .= $simb;
+        }
+
+        $len = strlen($caracteres);
+
+        for ($n = 1; $n <= $tamanho; $n++) {
+            $rand = mt_rand(1, $len);
+            $retorno .= $caracteres[$rand - 1];
+        }
+        return $retorno;
     }
 }

@@ -8,9 +8,19 @@
     <input type="password" id="password" class="form-control" name="password" placeholder="Senha" required>
     <div class="checkbox mb-3">
         <label>
-            <a href="#">Esqueci minha senha</a>
+            <?php
+            echo $this->Html->link('Esqueci minha senha', ['action' => 'recuperarSenha']);
+            ?>
         </label>
     </div>
     <button class="btn btn-lg btn-primary btn-block" type="submit">Entrar</button>
+    <div class="mb-3">
+        <label>
+            Ainda não participa?
+            <?php
+            echo $this->Html->link('Cadastre-se', ['action' => 'add_public']);
+            ?>
+        </label>
+    </div>
     <p class="mt-5 mb-3 text-muted">&copy; <?php echo date('Y'); ?></p>
 <?php echo $this->Form->end(); ?>

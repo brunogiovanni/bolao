@@ -70,6 +70,14 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/pages/*', ['controller' => 'Pages', 'action' => 'display']);
 
     /**
+     * Rotas de usuário
+     */
+    $routes->connect('/login', ['controller' => 'Users', 'action' => 'login']);
+    $routes->connect('/logout', ['controller' => 'Users', 'action' => 'logout']);
+    $routes->connect('/cadastro', ['controller' => 'Users', 'action' => 'addPublic']);
+    $routes->connect('/recuperar-senha', ['controller' => 'Users', 'action' => 'recuperarSenha']);
+
+    /**
      * Connect catchall routes for all controllers.
      *
      * Using the argument `DashedRoute`, the `fallbacks` method is a shortcut for

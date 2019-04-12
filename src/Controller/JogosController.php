@@ -138,20 +138,60 @@ class JogosController extends AppController
         $retorno = \curl_exec($opt);
         \curl_close($opt);
         $dados = json_decode($retorno);
-        $jogos = [];
+        $jogos = $idsApi = [];
         foreach ($dados->fases as $fase) {
             foreach ($fase->jogos->id as $i => $id) {
-                $jogos[] = [
-                    'data' => '1900-01-01', 'horario' => '00:00:00', 'estadio' => $id->estadio,
-                    'rodadas_id' => $id->rodada, 'casa' => $id->time1, 'visitante' => $id->time2
+                $idsApi[] = $i;
+                $jogos[$i] = [
+                    'id' => $i,
+                    'data' => ($id->data !== null) ? $id->data : '1900-01-01',
+                    'horario' => ($id->horario !== '') ? str_replace('h', ':', $id->horario) : '00:00:00',
+                    'estadio' => $id->estadio, 'rodadas_id' => $id->rodada, 'casa' => $id->time1,
+                    'visitante' => $id->time2, 'placar1' => $id->placar1, 'placar2' => $id->placar2,
+                    'vencedor' => ''
                 ];
+                if ($id->placar1 !== null && $id->placar2 !== null) {
+                    if ($id->placar1 > $id->placar2) {
+                        $jogos[$i]['vencedor'] = $id->time1;
+                    } elseif ($id->placar1 < $id->placar2) {
+                        $jogos[$i]['vencedor'] = $id->time2;
+                    }
+                }
             }
         }
-        $entidades = $this->Jogos->newEntities($jogos);
-        if ($this->Jogos->saveMany($entidades)) {
-            $this->Flash->success('Sincronizado com sucesso!', 'jogos');
+        $this->_salvarDadosApi($jogos, $idsApi);
+    }
+
+    private function _salvarDadosApi($dadosApi, $idsApi = [])
+    {
+        if (!empty($idsApi)) {
+            $jogosDB = $this->Jogos->find('all', ['conditions' => ['id IN' => $idsApi]])->count();
+            if ($jogosDB > 0) {
+                $jogos = [];
+                foreach ($idsApi as $id) {
+                    $jogo = $this->Jogos->get($id);
+                    $jogo->data = $dadosApi[$jogo->id]['data'];
+                    $jogo->horario = $dadosApi[$jogo->id]['horario'];
+                    $jogo->estadio = $dadosApi[$jogo->id]['estadio'];
+                    $jogo->visitante = $dadosApi[$jogo->id]['visitante'];
+                    $jogo->casa = $dadosApi[$jogo->id]['casa'];
+                    $jogo->placar1 = $dadosApi[$jogo->id]['placar1'];
+                    $jogo->placar2 = $dadosApi[$jogo->id]['placar2'];
+                    $jogo->vencedor = $dadosApi[$jogo->id]['vencedor'];
+
+                    $jogos[] = $jogo;
+                }
+            } else {
+                $jogos = $this->Jogos->newEntities($dadosApi);
+            }
         } else {
-            $this->Flash->error('Falha ao sincronizar dados!', 'jogos');
+            $jogos = $this->Jogos->newEntities($dadosApi);
+        }
+
+        if ($this->Jogos->saveMany($jogos)) {
+            $this->Flash->success('Sincronizado com sucesso!', ['key' => 'jogos']);
+        } else {
+            $this->Flash->error('Falha ao sincronizar!', ['key' => 'jogos']);
         }
 
         return $this->redirect(['action' => 'index']);

@@ -9,8 +9,9 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property int $users_id
  * @property int $jogos_id
- * @property string $aposta
- * @property int $equipes_id
+ * @property int $placar1
+ * @property int $placar2
+ * @property int $vencedor
  *
  * @property \App\Model\Entity\User $user
  * @property \App\Model\Entity\Jogo $jogo
@@ -29,8 +30,9 @@ class Aposta extends Entity
      * @var array
      */
     protected $_accessible = [
-        'aposta' => true,
-        'equipes_id' => true,
+        'placar1' => true,
+        'placar2' => true,
+        'vencedor' => true,
         'users_id' => true,
         'jogos_id' => true,
         'user' => true,

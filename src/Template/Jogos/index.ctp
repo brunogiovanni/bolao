@@ -33,7 +33,6 @@
     </div>
 </div>
 <?php echo $this->Flash->render('jogos'); ?>
-<hr />
 <div class="table-responsive">
     <table class="table table-striped table-hovered">
         <thead>
@@ -42,7 +41,7 @@
                 <th scope="col"><?= $this->Paginator->sort('horario', 'Horário') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('estadio', 'Estádio') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('rodadas_id', 'Rodada') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('casa', 'Time da casa') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('casa', 'Mandante') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('visitante') ?></th>
                 <?php if (in_array($usuario['group_id'], [1, 2])) : ?>
                     <th scope="col">Id</th>

@@ -20,7 +20,7 @@ class ApostasController extends AppController
      */
     public function index($jogoId)
     {
-        $this->paginate['contain'] = ['Users', 'Equipes'];
+        $this->paginate['contain'] = ['Users'];
         $this->paginate['conditions'] = ['jogos_id' => $jogoId];
         $apostas = $this->paginate($this->Apostas);
 
@@ -28,8 +28,8 @@ class ApostasController extends AppController
             'contain' => ['Fora', 'Mandante']
         ]);
 
-        $prazoHora = date('H:i', strtotime('-3 hours', strtotime($jogo->horario->format('H:i'))));
-        $horaPosJogo = date('H:i', strtotime('+1 hours', strtotime($jogo->horario->format('H:i'))));
+        $prazoHora = date('Y-m-d H:i', strtotime('-3 hours', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
+        $horaPosJogo = date('H:i', strtotime('+1 hours', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
 
         $pontos = $this->_verificarPontosContabilizados($jogoId);
 
@@ -63,7 +63,7 @@ class ApostasController extends AppController
     public function view($id = null)
     {
         $aposta = $this->Apostas->get($id, [
-            'contain' => ['Users', 'Jogos', 'Equipes']
+            'contain' => ['Users', 'Jogos']
         ]);
 
         $this->set('aposta', $aposta);
@@ -89,6 +89,13 @@ class ApostasController extends AppController
                     $data = $this->request->getData();
                     $data['users_id'] = $this->Auth->user('id');
                     $data['jogos_id'] = $jogoId;
+                    if ($data['placar1'] > $data['placar2']) {
+                        $data['vencedor'] = $jogo->time1;
+                    } elseif ($data['placar1'] < $data['placar2']) {
+                        $data['vencedor'] = $jogo->time2;
+                    } else {
+                        $data['vencedor'] = 0;
+                    }
                     $aposta = $this->Apostas->patchEntity($aposta, $data);
                     if ($this->Apostas->save($aposta)) {
                         $this->Flash->success('Aposta salva com sucesso!', ['key' => 'apostas']);
