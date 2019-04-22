@@ -36,6 +36,11 @@
             <?php echo $this->Form->control('group_id', ['label' => 'Grupo:', 'class' => 'form-control']); ?>
         </div>
     </div>
+    <div class="col-sm-4">
+        <div class="form-group">
+            <?php echo $this->Form->control('ativo', ['label' => 'Ativo:', 'class' => 'form-control', 'options' => ['S' => 'Sim', 'N' => 'Não']]); ?>
+        </div>
+    </div>
 </div>
 <div class="row">
     <div class="container">

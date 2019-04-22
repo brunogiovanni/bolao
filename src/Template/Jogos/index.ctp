@@ -21,15 +21,11 @@
                 ]); ?>
             </div>
             <div class="col-sm-1">
-                <br />
-                <?php echo $this->Form->button('<i class="fas fa-search"></i>', ['class' => 'btn btn-default', 'escape' => false]); ?>
+                <label>  </label>
+                <?php echo $this->Form->button('<i class="fas fa-search"></i>', ['class' => 'btn btn-info', 'escape' => false, 'title' => 'Pesquisar']); ?>
             </div>
         </div>
         <?php echo $this->Form->end(); ?>
-    </div>
-    <div class="col-sm-1 text-right">
-        <br />
-        <?php echo $this->Html->link('Nova', ['action' => 'add'], ['class' => 'btn btn-primary']); ?>
     </div>
 </div>
 <?php echo $this->Flash->render('jogos'); ?>

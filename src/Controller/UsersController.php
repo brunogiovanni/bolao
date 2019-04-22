@@ -23,7 +23,7 @@ class UsersController extends AppController
     {
         parent::beforeFilter($event);
 
-        $this->Auth->allow(['login', '_loginFormulario', 'logout', 'addPublic', 'recuperarSenha']);
+        $this->Auth->allow(['login', '_loginFormulario', 'logout', 'recuperarSenha']);
     }
 
     /**
@@ -50,10 +50,12 @@ class UsersController extends AppController
     public function view($id = null)
     {
         $user = $this->Users->get($id, [
-            'contain' => ['Groups']
+            'contain' => ['Pontos' => ['Apostas' => ['Jogos' => ['Fora', 'Mandante']]]]
         ]);
 
-        $this->set('user', $user);
+        $totalPontos = 0;
+
+        $this->set(compact('user', 'totalPontos'));
     }
 
     /**
@@ -65,7 +67,9 @@ class UsersController extends AppController
     {
         $user = $this->Users->newEntity();
         if ($this->request->is('post')) {
-            $user = $this->Users->patchEntity($user, $this->request->getData());
+            $data = $this->request->getData();
+            $data['ativo'] = 'S';
+            $user = $this->Users->patchEntity($user, $data);
             if ($this->Users->save($user)) {
                 $this->Flash->success('Registro salvo com sucesso!', ['key' => 'users']);
 
@@ -94,6 +98,7 @@ class UsersController extends AppController
             if (!empty($data['nova_senha'])) {
                 $data['password'] = $data['nova_senha'];
             }
+            $data['ativo'] = 'S';
             $user = $this->Users->patchEntity($user, $data);
             if ($this->Users->save($user)) {
                 $this->Flash->success('Registro atualizado com sucesso!', ['key' => 'users']);
@@ -149,8 +154,12 @@ class UsersController extends AppController
         if ($this->request->is('post')) {
             $user = $this->Auth->identify();
             if ($user) {
-                $this->Auth->setUser($user);
-                return $this->redirect($this->Auth->redirectUrl());
+                if ($user['ativo'] === 'S') {
+                    $this->Auth->setUser($user);
+                    return $this->redirect($this->Auth->redirectUrl());
+                } else {
+                    $this->Flash->error('Seu perfil ainda está inativo! Aguarde!', ['key' => 'login']);
+                }
             } else {
                 $this->Flash->error('Usuário ou senha incorretos', ['key' => 'login']);
             }
@@ -208,6 +217,11 @@ class UsersController extends AppController
         if ($this->request->is('post')) {
             $data = $this->request->getData();
             $data['group_id'] = 3;
+            if (isset($data['confirmado']) && $data['confirmado'] === 1) {
+                $data['ativo'] = 'S';
+            } else {
+                $data['ativo'] = 'N';
+            }
             $user = $this->Users->patchEntity($user, $data);
             if ($this->Users->save($user)) {
                 $this->Flash->success('Registro salvo com sucesso!', ['key' => 'login']);

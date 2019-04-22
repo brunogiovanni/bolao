@@ -42,6 +42,10 @@ class UsersTable extends Table
             'foreignKey' => 'group_id',
             'joinType' => 'INNER'
         ]);
+
+        $this->hasMany('Pontos', [
+            'foreignKey' => 'users_id'
+        ]);
     }
 
     /**
@@ -74,6 +78,10 @@ class UsersTable extends Table
             ->maxLength('nome', 60)
             ->requirePresence('nome', 'create')
             ->allowEmptyString('nome', false);
+
+        $validator
+            ->scalar('ativo')
+            ->requirePresence('ativo', 'create');
 
         $validator
             ->email('email')

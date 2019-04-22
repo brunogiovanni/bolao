@@ -14,6 +14,7 @@ use Cake\Auth\DefaultPasswordHasher;
  * @property string $nome
  * @property string $email
  * @property int $group_id
+ * @property string $atitvo
  *
  * @property \App\Model\Entity\Group $group
  */
@@ -35,7 +36,8 @@ class User extends Entity
         'nome' => true,
         'email' => true,
         'group_id' => true,
-        'group' => true
+        'group' => true,
+        'ativo' => true
     ];
 
     /**

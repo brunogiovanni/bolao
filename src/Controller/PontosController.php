@@ -29,8 +29,11 @@ class PontosController extends AppController
         $jogo = [];
         $this->paginate['fields'] = ['Pontos.id', 'Pontos.pontos', 'Users.nome', 'Apostas.id', 'Jogos.id', 'Fora.brasao', 'Fora.descricao', 'Mandante.brasao', 'Mandante.descricao'];
         $this->paginate['contain'] = ['Users', 'Apostas' => ['Jogos' => ['Fora', 'Mandante']]];
+        if ($this->Auth->user('group_id') === 3) {
+            $this->paginate['conditions'] = ['Pontos.users_id' => $this->Auth->user('id')];
+        }
         if (!empty($jogoId)) {
-            $this->paginate['conditions'] = ['Apostas.jogos_id' => $jogoId];
+            array_push($this->paginate['conditions'], ['Apostas.jogos_id' => $jogoId]);
             $jogo = $this->Pontos->Apostas->Jogos->get($jogoId, [
                 'contain' => ['Fora', 'Mandante']
             ]);
@@ -154,5 +157,25 @@ class PontosController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    public function placarGeral()
+    {
+        $pontos = $this->Pontos->find('all', [
+            'fields' => ['Pontos.id', 'Pontos.pontos', 'Users.id', 'Users.nome'],
+            'contain' => ['Users']
+        ]);
+
+        $totalPontos = [];
+        foreach ($pontos as $ponto) {
+            if (!isset($totalPontos[$ponto->user->id])) {
+                $totalPontos[$ponto->user->id] = ['pontos' => $ponto->pontos, 'usuario' => $ponto->user->nome];
+            } else {
+                $totalPontos[$ponto->user->id]['pontos'] += $ponto->pontos;
+            }
+        }
+        arsort($totalPontos);
+
+        $this->set(compact('totalPontos'));
     }
 }

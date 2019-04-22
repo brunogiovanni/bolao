@@ -19,6 +19,12 @@
     ]);
     ?>
 
+    <style>
+        .corpo {
+            margin-top: 1rem;
+        }
+    </style>
+
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
 </head>
@@ -71,6 +77,7 @@
                                 <?php
                                 echo $this->Html->link('Menus', ['controller' => 'Menus', 'action' => 'index'], ['class' => 'dropdown-item']);
                                 echo $this->Html->link('Grupos', ['controller' => 'Groups', 'action' => 'index'], ['class' => 'dropdown-item']);
+                                echo $this->Html->link('Permissões', '/AclManager', ['class' => 'dropdown-item', 'target' => '_blank']);
                                 ?>
                             </div>
                         </li>
@@ -96,7 +103,7 @@
         </div>
     </nav>
 
-    <div class="container">
+    <div class="corpo container">
         <?= $this->fetch('content') ?>
     </div>
 

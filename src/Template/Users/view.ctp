@@ -1,46 +1,54 @@
-<?php
-/**
- * @var \App\View\AppView $this
- * @var \App\Model\Entity\User $user
- */
-?>
-<nav class="large-3 medium-4 columns" id="actions-sidebar">
-    <ul class="side-nav">
-        <li class="heading"><?= __('Actions') ?></li>
-        <li><?= $this->Html->link(__('Edit User'), ['action' => 'edit', $user->id]) ?> </li>
-        <li><?= $this->Form->postLink(__('Delete User'), ['action' => 'delete', $user->id], ['confirm' => __('Are you sure you want to delete # {0}?', $user->id)]) ?> </li>
-        <li><?= $this->Html->link(__('List Users'), ['action' => 'index']) ?> </li>
-        <li><?= $this->Html->link(__('New User'), ['action' => 'add']) ?> </li>
-        <li><?= $this->Html->link(__('List Groups'), ['controller' => 'Groups', 'action' => 'index']) ?> </li>
-        <li><?= $this->Html->link(__('New Group'), ['controller' => 'Groups', 'action' => 'add']) ?> </li>
-    </ul>
-</nav>
-<div class="users view large-9 medium-8 columns content">
-    <h3><?= h($user->id) ?></h3>
-    <table class="vertical-table">
-        <tr>
-            <th scope="row"><?= __('Username') ?></th>
-            <td><?= h($user->username) ?></td>
-        </tr>
-        <tr>
-            <th scope="row"><?= __('Password') ?></th>
-            <td><?= h($user->password) ?></td>
-        </tr>
-        <tr>
-            <th scope="row"><?= __('Nome') ?></th>
-            <td><?= h($user->nome) ?></td>
-        </tr>
-        <tr>
-            <th scope="row"><?= __('Email') ?></th>
-            <td><?= h($user->email) ?></td>
-        </tr>
-        <tr>
-            <th scope="row"><?= __('Group') ?></th>
-            <td><?= $user->has('group') ? $this->Html->link($user->group->id, ['controller' => 'Groups', 'action' => 'view', $user->group->id]) : '' ?></td>
-        </tr>
-        <tr>
-            <th scope="row"><?= __('Id') ?></th>
-            <td><?= $this->Number->format($user->id) ?></td>
-        </tr>
-    </table>
-</div>
+<fieldset>
+    <legend>Dados do usuário</legend>
+    <div class="row">
+        <div class="col-sm-6">
+            <label>
+                <?php echo $user->nome; ?>
+            </label>
+        </div>
+        <div class="col-sm-6">
+            <label>
+                <?php echo $user->email; ?>
+            </label>
+        </div>
+    </div>
+</fieldset>
+<hr />
+<fieldset>
+    <legend>Pontos acumulados</legend>
+    <div class="row">
+        <div class="table-responsive">
+            <table class="table table-striped table-hovered">
+                <thead>
+                    <th>Jogo</th>
+                    <th>Pontos</th>
+                </thead>
+                <tbody>
+                    <?php foreach ($users->pontos as $ponto) : ?>
+                        <tr>
+                            <td>
+                                <?php
+                                echo $this->Html->image($ponto->jogo->mandante->brasao, [
+                                    'class' => 'img-fluid mb-2', 'alt' => $ponto->jogo->mandante->descricao,
+                                    'title' => $ponto->jogo->mandante->descricao
+                                ]) . ' x ';
+                                echo $this->Html->image($ponto->jogo->fora->brasao, [
+                                    'class' => 'img-fluid mb-2', 'alt' => $ponto->jogo->fora->descricao,
+                                    'title' => $ponto->jogo->fora->descricao
+                                ]);
+                                ?>
+                            </td>
+                            <td>
+                                <?php echo $ponto->pontos; $totalPontos += $ponto->pontos; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <tr>
+                        <td><strong>Total de pontos</strong></td>
+                        <td><?php echo $totalPontos; ?></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</fieldset>
