@@ -35,12 +35,16 @@ class JogosController extends AppController
         $this->paginate['conditions'] = $conditions;
         $this->paginate['contain'] = ['Rodadas', 'Fora', 'Mandante'];
         $this->paginate['order'] = ['rodadas_id' => 'ASC', 'data' => 'asc', 'horario' => 'asc'];
-        $this->paginate['fields'] = ['Jogos.rodadas_id', 'Jogos.id', 'Jogos.horario', 'Jogos.data', 'Rodadas.numero_rodada', 'Jogos.estadio', 'Mandante.descricao', 'Fora.descricao'];
-        $this->paginate['group'] = ['Jogos.rodadas_id', 'Jogos.id', 'Jogos.horario', 'Jogos.data', 'Rodadas.numero_rodada', 'Jogos.estadio', 'Mandante.descricao', 'Fora.descricao'];
+        $this->paginate['fields'] = ['Jogos.rodadas_id', 'Jogos.id', 'Jogos.horario', 'Jogos.data', 'Rodadas.numero_rodada', 'Jogos.estadio', 'Mandante.descricao', 'Fora.descricao', 'Mandante.brasao', 'Fora.brasao'];
+        $this->paginate['group'] = ['Jogos.rodadas_id', 'Jogos.id', 'Jogos.horario', 'Jogos.data', 'Rodadas.numero_rodada', 'Jogos.estadio', 'Mandante.descricao', 'Fora.descricao', 'Mandante.brasao', 'Fora.brasao'];
         $jogos = $this->paginate($this->Jogos);
         $rodadas = $this->Jogos->Rodadas->find('list', ['order' => ['numero_rodada' => 'asc']]);
 
-        $this->set(compact('jogos', 'rodadas'));
+        foreach ($jogos as $jogo) {
+            $prazoHora[$jogo->id] = date('Y-m-d H:i', strtotime('-3 hours', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
+        }
+
+        $this->set(compact('jogos', 'rodadas', 'prazoHora'));
     }
 
     /**

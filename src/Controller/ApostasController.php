@@ -80,7 +80,7 @@ class ApostasController extends AppController
         $jogo = $this->Apostas->Jogos->get($jogoId, [
             'contain' => ['Fora', 'Mandante']
         ]);
-        $prazoHora = date('H:i', strtotime('-3 hours', strtotime($jogo->horario->format('H:i'))));
+        $prazoHora = date('Y-m-d H:i', strtotime('-3 hours', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
         if ((strtotime(date('Y-m-d')) <= strtotime($jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) < strtotime($prazoHora))) {
             $quantidadeApostas = $this->_verificarApostasUsuario($jogoId);
             if ($quantidadeApostas <= 0) {
@@ -147,8 +147,7 @@ class ApostasController extends AppController
         $aposta = $this->Apostas->get($id, [
             'contain' => ['Jogos' => ['Mandante', 'Fora']]
         ]);
-
-        $prazoHora = date('H:i', strtotime('-3 hours', strtotime($aposta->jogo->horario->format('H:i'))));
+        $prazoHora = date('Y-m-d H:i', strtotime('-3 hours', strtotime($aposta->jogo->data->format('Y-m-d') . 'T' . $aposta->jogo->horario->format('H:i'))));
         if ((strtotime(date('Y-m-d')) <= strtotime($aposta->jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) < strtotime($prazoHora))) {
             if ($this->request->is(['patch', 'post', 'put'])) {
                 $data = $this->request->getData();
@@ -187,7 +186,7 @@ class ApostasController extends AppController
             'contain' => ['Jogos' => ['Mandante', 'Fora']]
         ]);
 
-        $prazoHora = date('H:i', strtotime('-3 hours', strtotime($aposta->jogo->horario->format('H:i'))));
+        $prazoHora = date('Y-m-d H:i', strtotime('-3 hours', strtotime($aposta->jogo->data->format('Y-m-d') . 'T' . $aposta->jogo->horario->format('H:i'))));
         if ((strtotime(date('Y-m-d')) <= strtotime($aposta->jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) < strtotime($prazoHora))) {
             if ($this->Apostas->delete($aposta)) {
                 $this->Flash->success('Aposta excluída com sucesso!', ['key' => 'apostas']);
@@ -200,5 +199,31 @@ class ApostasController extends AppController
             $this->Flash->info('Apostas encerradas!', ['key' => 'apostas']);
             return $this->redirect(['action' => 'index', $aposta->jogos_id]);
         }
+    }
+
+    public function salvarApostas()
+    {
+        $this->allowMethod('post');
+
+        $data = $this->_completarArrayApostas($this->request->getData('apostas'));
+        if (is_array($data)) {
+            $placares = $this->Apostas->newEntities($data);
+            if ($this->Apostas->saveMany($placares)) {
+                $mensagem = 'sucesso';
+            } else {
+                $mensagem = 'erro';
+            }
+            $this->set('mensagem', $mensagem);
+        }
+    }
+
+    private function _completarArrayApostas(array $data)
+    {
+        $quantidade = count($data);
+        for ($i = 0; $i < $quantidade; $i++) {
+            $data[$i]['users_id'] = $this->Auth->user('id');
+        }
+
+        return $data;
     }
 }

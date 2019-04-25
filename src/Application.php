@@ -37,6 +37,7 @@ class Application extends BaseApplication
         $this->addPlugin('Acl');
         $this->addPlugin('AclManager', ['bootstrap' => true, 'routes' => true]);
         $this->addPlugin('Cake/Localized');
+        $this->addPlugin('Cors', ['bootstrap' => true, 'routes' => false]);
 
         // Call parent to load bootstrap from files.
         parent::bootstrap();
