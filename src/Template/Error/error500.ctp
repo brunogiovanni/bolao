@@ -36,8 +36,6 @@ if (Configure::read('debug')) :
     $this->end();
 endif;
 ?>
-<h2><?= __d('cake', 'An Internal Error Has Occurred') ?></h2>
-<p class="error">
-    <strong><?= __d('cake', 'Error') ?>: </strong>
-    <?= h($message) ?>
-</p>
+<h2>Aconteceu um erro!</h2>
+<p>Volte e tente novamente!</p>
+<?php echo $this->Html->image('bola_murcha.jpg', ['alt' => 'Erro', 'class' => 'img-fluid']); ?>

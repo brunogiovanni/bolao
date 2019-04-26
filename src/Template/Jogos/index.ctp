@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row" id="rodadas">
     <div class="col-sm-2">
         <br />
         <h3>Rodadas</h3>
@@ -6,18 +6,19 @@
     <div class="col-sm-9">
         <?php echo $this->Form->create('', ['method' => 'get']); ?>
         <div class="row">
-            <div class="col-sm-3">
-                <?php echo $this->Form->input('data', [
+            <!-- <div class="col-sm-3">
+                <?php echo $this->Form->control('data', [
                     'label' => 'Data:', 'class' => 'form-control',
                     'placeholder' => date('d/m/Y'),
                     'val' => (!empty($this->request->getQuery('data'))) ? $this->request->getQuery('data') : ''
                 ]); ?>
-            </div>
+            </div> -->
             <div class="col-sm-2">
-                <?php echo $this->Form->input('rodada', [
+                <?php echo $this->Form->control('rodada', [
                     'label' => 'Rodada:', 'class' => 'form-control',
-                    'options' => $rodadas, 'empty' => true,
-                    'val' => (!empty($this->request->getQuery('rodada'))) ? $this->request->getQuery('rodada') : ''
+                    'options' => $rodadas,
+                    'val' => (!empty($this->request->getQuery('rodada'))) ? $this->request->getQuery('rodada') : '',
+                    'default' => 1
                 ]); ?>
             </div>
             <div class="col-sm-1">
@@ -35,6 +36,7 @@
     <div class="alert alert-danger">Erro ao salvar as apostas! Tente novamente ou entre em contato com a administração!</div>
 </div>
 <?php echo $this->Flash->render('jogos'); ?>
+<?php echo $this->Flash->render('apostas'); ?>
 <div class="table-responsive">
     <table class="table table-striped table-hovered">
         <thead>
@@ -52,6 +54,7 @@
             </tr>
         </thead>
         <tbody>
+            <?= $this->Form->create(); ?>
             <?php foreach ($jogos as $key => $jogo) : ?>
             <?php $disabled = ((strtotime(date('Y-m-d')) <= strtotime($jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) < strtotime($prazoHora[$jogo->id]))) ? '' : 'disabled'; ?>
                 <tr>
@@ -60,14 +63,25 @@
                     <td><?= $jogo->rodada->numero_rodada ?></td>
                     <td>
                         <div class="row">
-                            <?= $this->Html->image($jogo->mandante->brasao, ['class' => 'img-fluid col-3', 'alt' => $jogo->mandante->descricao, 'title' => $jogo->mandante->descricao]) ?>
-                            <input type="number" <?= $disabled ?> onBlur="salvarLance(this.value, null, <?= $key ?>, <?= $jogo->id ?>);" min="0" id="placar-mandante-<?= $key ?>" class="form-control col-3" />
+                            <div class="col-sm-3">
+                                <?= $this->Html->image($jogo->mandante->brasao, ['class' => 'img-fluid', 'alt' => $jogo->mandante->descricao, 'title' => $jogo->mandante->descricao]) ?>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="hidden" id="id-aposta-<?= $key; ?>" value="<?= $apostas[$jogo->id]['id']; ?>" />
+                                <input type="hidden" id="time1-<?= $key; ?>" value="<?= $jogo->casa; ?>" />
+                                <input type="number" <?= $disabled ?> onBlur="salvarLance(this.value, null, <?= $key ?>, <?= $jogo->id ?>);" min="0" id="placar-mandante-<?= $key ?>" class="form-control" value="<?= $apostas[$jogo->id]['time1'] ?>" />
+                            </div>
                         </div>
                     </td>
                     <td>
                         <div class="row">
-                            <input type="number" <?= $disabled ?> onBlur="salvarLance(null, this.value, <?= $key ?>, <?= $jogo->id ?>);" min="0" id="placar-visitante-<?= $key ?>" class="form-control col-3" />
-                            <?= $this->Html->image($jogo->fora->brasao, ['class' => 'img-fluid col-3', 'alt' => $jogo->fora->descricao, 'title' => $jogo->fora->descricao]) ?>
+                            <div class="col-sm-3">
+                                <?= $this->Html->image($jogo->fora->brasao, ['class' => 'img-fluid', 'alt' => $jogo->fora->descricao, 'title' => $jogo->fora->descricao]) ?>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="hidden" id="time2-<?= $key; ?>" value="<?= $jogo->visitante; ?>" />
+                                <input type="number" <?= $disabled ?> onBlur="salvarLance(null, this.value, <?= $key ?>, <?= $jogo->id ?>);" min="0" id="placar-visitante-<?= $key ?>" class="form-control" value="<?= $apostas[$jogo->id]['time2'] ?>" />
+                            </div>
                         </div>
                     </td>
                     <?php if (in_array($usuario['group_id'], [1])) : ?>
@@ -82,10 +96,11 @@
                     </td> -->
                 </tr>
             <?php endforeach; ?>
+            <?= $this->Form->end() ?>
         </tbody>
     </table>
     <div class="container text-right">
-        <button type="button" onClick="salvarApostas();" class="btn btn-success" title="Salvar apostas" <?= (!empty($disabled)) ? 'style="display: none"' : '' ?>>Salvar apostas</button>
+        <a href="#rodadas" onClick="salvarApostas();" class="btn btn-success" title="Salvar apostas" <?= (!empty($disabled)) ? 'style="display: none"' : '' ?>>Salvar apostas</a>
     </div>
     <nav aria-label="Page navigation">
         <ul class="pagination">

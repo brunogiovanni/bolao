@@ -28,8 +28,8 @@ class ApostasController extends AppController
             'contain' => ['Fora', 'Mandante']
         ]);
 
-        $prazoHora = date('Y-m-d H:i', strtotime('-3 hours', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
-        $horaPosJogo = date('H:i', strtotime('+1 hours', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
+        $prazoHora = date('Y-m-d H:i', strtotime('-30 minutes', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
+        $horaPosJogo = date('H:i', strtotime('+2 hours', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
 
         $pontos = $this->_verificarPontosContabilizados($jogoId);
 
@@ -80,7 +80,7 @@ class ApostasController extends AppController
         $jogo = $this->Apostas->Jogos->get($jogoId, [
             'contain' => ['Fora', 'Mandante']
         ]);
-        $prazoHora = date('Y-m-d H:i', strtotime('-3 hours', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
+        $prazoHora = date('Y-m-d H:i', strtotime('-30 minutes', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
         if ((strtotime(date('Y-m-d')) <= strtotime($jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) < strtotime($prazoHora))) {
             $quantidadeApostas = $this->_verificarApostasUsuario($jogoId);
             if ($quantidadeApostas <= 0) {
@@ -147,7 +147,7 @@ class ApostasController extends AppController
         $aposta = $this->Apostas->get($id, [
             'contain' => ['Jogos' => ['Mandante', 'Fora']]
         ]);
-        $prazoHora = date('Y-m-d H:i', strtotime('-3 hours', strtotime($aposta->jogo->data->format('Y-m-d') . 'T' . $aposta->jogo->horario->format('H:i'))));
+        $prazoHora = date('Y-m-d H:i', strtotime('-30 minutes', strtotime($aposta->jogo->data->format('Y-m-d') . 'T' . $aposta->jogo->horario->format('H:i'))));
         if ((strtotime(date('Y-m-d')) <= strtotime($aposta->jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) < strtotime($prazoHora))) {
             if ($this->request->is(['patch', 'post', 'put'])) {
                 $data = $this->request->getData();
@@ -186,7 +186,7 @@ class ApostasController extends AppController
             'contain' => ['Jogos' => ['Mandante', 'Fora']]
         ]);
 
-        $prazoHora = date('Y-m-d H:i', strtotime('-3 hours', strtotime($aposta->jogo->data->format('Y-m-d') . 'T' . $aposta->jogo->horario->format('H:i'))));
+        $prazoHora = date('Y-m-d H:i', strtotime('-30 minutes', strtotime($aposta->jogo->data->format('Y-m-d') . 'T' . $aposta->jogo->horario->format('H:i'))));
         if ((strtotime(date('Y-m-d')) <= strtotime($aposta->jogo->data->format('Y-m-d'))) && (strtotime(date('H:i')) < strtotime($prazoHora))) {
             if ($this->Apostas->delete($aposta)) {
                 $this->Flash->success('Aposta excluída com sucesso!', ['key' => 'apostas']);
@@ -203,27 +203,77 @@ class ApostasController extends AppController
 
     public function salvarApostas()
     {
-        $this->allowMethod('post');
-
-        $data = $this->_completarArrayApostas($this->request->getData('apostas'));
-        if (is_array($data)) {
-            $placares = $this->Apostas->newEntities($data);
-            if ($this->Apostas->saveMany($placares)) {
-                $mensagem = 'sucesso';
-            } else {
-                $mensagem = 'erro';
+        $this->request->allowMethod('post');
+        if (!empty($this->request->getData('apostas'))) {
+            $data = $this->_completarArrayApostas($this->request->getData('apostas'));
+            if (is_array($data)) {
+                $data = $this->_verificarIdAposta($data);
+                if (!empty($data)) {
+                    $placares = $this->Apostas->newEntities($data);
+                    if ($this->Apostas->saveMany($placares)) {
+                        $mensagem = 'sucesso';
+                        $this->Flash->success('Apostas salvas com sucesso!', ['key' => 'apostas']);
+                    } else {
+                        $mensagem = 'erro';
+                        $this->Flash->error('Erro ao salvar apostas!', ['key' => 'apostas']);
+                    }
+                    $this->set('mensagem', $mensagem);
+                }
             }
-            $this->set('mensagem', $mensagem);
         }
     }
 
     private function _completarArrayApostas(array $data)
     {
         $quantidade = count($data);
+        $dadosFormatados = [];
         for ($i = 0; $i < $quantidade; $i++) {
-            $data[$i]['users_id'] = $this->Auth->user('id');
+            if ($data[$i]['placar1'] > $data[$i]['placar2']) {
+                $dadosFormatados[$i]['vencedor'] = $data[$i]['time1'];
+            } elseif ($data[$i]['placar1'] < $data[$i]['placar2']) {
+                $dadosFormatados[$i]['vencedor'] = $data[$i]['time2'];
+            } else {
+                $dadosFormatados[$i]['vencedor'] = 0;
+            }
+            $dadosFormatados[$i]['users_id'] = $this->Auth->user('id');
+            $dadosFormatados[$i]['placar1'] = $data[$i]['placar1'];
+            $dadosFormatados[$i]['placar2'] = $data[$i]['placar2'];
+            $dadosFormatados[$i]['jogos_id'] = $data[$i]['jogos_id'];
+            $dadosFormatados[$i]['id'] = $data[$i]['id'];
         }
 
+        return $dadosFormatados;
+    }
+
+    private function _verificarIdAposta(array $data)
+    {
+        $dadosAtualizar = [];
+        foreach ($data as $key => $aposta) {
+            if (!empty($data[$key]['id'])) {
+                $dadosAtualizar[] = $aposta;
+                unset($data[$key]);
+            }
+        }
+        if (!empty($dadosAtualizar)) {
+            $this->_atualizarApostas($dadosAtualizar);
+        }
         return $data;
+    }
+
+    private function _atualizarApostas(array $data)
+    {
+        $mensagem = '';
+        foreach ($data as $aposta) {
+            $apostas = $this->Apostas->get($aposta['id']);
+            $apostas = $this->Apostas->patchEntity($apostas, $aposta);
+            if ($this->Apostas->save($apostas)) {
+                $mensagem = 'sucesso';
+                $this->Flash->success('Apostas atualizadas com sucesso!', ['key' => 'apostas']);
+            } else {
+                $mensagem = $apostas->errors();
+                $this->Flash->error('Erro ao atualizar apostas!', ['key' => 'apostas']);
+            }
+        }
+        $this->set('mensagem', $mensagem);
     }
 }

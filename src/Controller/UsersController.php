@@ -23,7 +23,7 @@ class UsersController extends AppController
     {
         parent::beforeFilter($event);
 
-        $this->Auth->allow(['login', '_loginFormulario', 'logout', 'recuperarSenha']);
+        $this->Auth->allow(['login', '_loginFormulario', 'logout', 'recuperarSenha', 'pagseguro']);
     }
 
     /**
@@ -251,6 +251,8 @@ class UsersController extends AppController
                         ->subject('Recuperação de senha')
                         ->send($mensagem);
                 }
+                $this->Flash->success('Nova senha foi enviada para o seu e-mail. Verifique sua caixa de entrada e/ou SPAM.', ['key' => 'login']);
+                $this->redirect(['action' => 'login']);
             } else {
                 $this->Flash->error('Este e-mail não está cadastrado!', ['key' => 'login']);
             }
@@ -296,5 +298,35 @@ class UsersController extends AppController
             $retorno .= $caracteres[$rand - 1];
         }
         return $retorno;
+    }
+
+    public function pagseguro()
+    {
+        \PagSeguro\Library::initialize();
+        \PagSeguro\Configuration\Configure::setEnvironment('sandbox');
+        \PagSeguro\Configuration\Configure::setAccountCredentials('brunobraganca@outlook.com', 'B2016608F7694BCAA02945FA2F292B9B');
+        \PagSeguro\Configuration\Configure::setCharset('UTF-8');
+        $sessao = \PagSeguro\Services\Session::create(
+            \PagSeguro\Configuration\Configure::getAccountCredentials()
+        );
+        $credential = \PagSeguro\Configuration\Configure::getAccountCredentials();
+        
+        $pagseguro = new \PagSeguro\Domains\Requests\Payment();
+        $pagseguro->setSender()->setName('Bruno Giovanni');
+        $pagseguro->setSender()->setEmail('bginfo7@gmail.com');
+        // $pagseguro->setItems(['itemId' => '1', 'ite mDescription' => 'Bolão Medeiros', 'itemQuantity' => '1', 'itemAmount' => '250.00']);
+        $pagseguro->addParameter()->withParameters('itemId', '0001')->index(1);
+        $pagseguro->addParameter()->withParameters('itemDescription', 'Bolão Medeiros')->index(1);
+        $pagseguro->addParameter()->withParameters('itemQuantity', '1')->index(1);
+        $pagseguro->addParameter()->withParameters('itemAmount', '250.00')->index(1);
+        $pagseguro->setCurrency('BRL');
+        $pagseguro->setRedirectUrl('https://bolao.cervejamedeiros.com.br');
+        $pagseguro->acceptPaymentMethod()->name(\PagSeguro\Enum\PaymentMethod\Name::DEBITO_ITAU);
+        try {
+            $response = $pagseguro->register($credential);
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
+        exit();
     }
 }

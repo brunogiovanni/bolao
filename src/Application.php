@@ -20,6 +20,7 @@ use Cake\Error\Middleware\ErrorHandlerMiddleware;
 use Cake\Http\BaseApplication;
 use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
+// use Cake\Http\Middleware\CsrfProtectionMiddleware;
 
 /**
  * Application setup class.
@@ -37,7 +38,7 @@ class Application extends BaseApplication
         $this->addPlugin('Acl');
         $this->addPlugin('AclManager', ['bootstrap' => true, 'routes' => true]);
         $this->addPlugin('Cake/Localized');
-        $this->addPlugin('Cors', ['bootstrap' => true, 'routes' => false]);
+        // $this->addPlugin('Cors', ['bootstrap' => true, 'routes' => false]);
 
         // Call parent to load bootstrap from files.
         parent::bootstrap();
@@ -69,6 +70,8 @@ class Application extends BaseApplication
      */
     public function middleware($middlewareQueue)
     {
+        // $options = []; //Options to CSRF Middleware
+        // $csrf = new CsrfProtectionMiddleware($options);
         $middlewareQueue
             // Catch any exceptions in the lower layers,
             // and make an error page/response
@@ -78,6 +81,9 @@ class Application extends BaseApplication
             ->add(new AssetMiddleware([
                 'cacheTime' => Configure::read('Asset.cacheTime')
             ]))
+
+            // Add CSRF Middleware
+            // ->add($csrf)
 
             // Add routing middleware.
             // Routes collection cache enabled by default, to disable route caching

@@ -1,5 +1,8 @@
 <fieldset>
     <legend>Dados do usuário</legend>
+    <div class="text-right">
+        <?php echo $this->Html->link('Editar informações', ['action' => 'edit', $user->id], ['class' => 'btn btn-info', 'title' => 'Editar informações']); ?>
+    </div>
     <div class="row">
         <div class="col-sm-6">
             <label>
@@ -24,7 +27,7 @@
                     <th>Pontos</th>
                 </thead>
                 <tbody>
-                    <?php foreach ($users->pontos as $ponto) : ?>
+                    <?php foreach ($user->pontos as $ponto) : ?>
                         <tr>
                             <td>
                                 <?php

@@ -32,19 +32,49 @@ class JogosController extends AppController
         if (!empty($this->request->getQuery('rodada'))) {
             array_push($conditions, ['rodadas_id' => $this->request->getQuery('rodada')]);
         }
+        // else {
+        //     $numeroRodada = $this->_verificarRodadaAtual();
+        //     array_push($conditions, ['rodadas_id' => $numeroRodada]);
+        // }
         $this->paginate['conditions'] = $conditions;
-        $this->paginate['contain'] = ['Rodadas', 'Fora', 'Mandante'];
+        $this->paginate['contain'] = ['Rodadas', 'Fora', 'Mandante', 'Apostas' => ['conditions' => ['Apostas.users_id' => $this->Auth->user('id')]]];
         $this->paginate['order'] = ['rodadas_id' => 'ASC', 'data' => 'asc', 'horario' => 'asc'];
-        $this->paginate['fields'] = ['Jogos.rodadas_id', 'Jogos.id', 'Jogos.horario', 'Jogos.data', 'Rodadas.numero_rodada', 'Jogos.estadio', 'Mandante.descricao', 'Fora.descricao', 'Mandante.brasao', 'Fora.brasao'];
-        $this->paginate['group'] = ['Jogos.rodadas_id', 'Jogos.id', 'Jogos.horario', 'Jogos.data', 'Rodadas.numero_rodada', 'Jogos.estadio', 'Mandante.descricao', 'Fora.descricao', 'Mandante.brasao', 'Fora.brasao'];
+        $this->paginate['fields'] = ['Jogos.rodadas_id', 'Jogos.id', 'Jogos.horario', 'Jogos.data', 'Rodadas.numero_rodada', 'Jogos.estadio', 'Mandante.descricao', 'Fora.descricao', 'Mandante.brasao', 'Fora.brasao', 'Jogos.casa', 'Jogos.visitante'];
+        $this->paginate['group'] = ['Jogos.rodadas_id', 'Jogos.id', 'Jogos.horario', 'Jogos.data', 'Rodadas.numero_rodada', 'Jogos.estadio', 'Mandante.descricao', 'Fora.descricao', 'Mandante.brasao', 'Fora.brasao', 'Jogos.casa', 'Jogos.visitante'];
         $jogos = $this->paginate($this->Jogos);
         $rodadas = $this->Jogos->Rodadas->find('list', ['order' => ['numero_rodada' => 'asc']]);
+        $apostas = $this->_organizarApostasJogador($jogos);
 
         foreach ($jogos as $jogo) {
-            $prazoHora[$jogo->id] = date('Y-m-d H:i', strtotime('-3 hours', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
+            $prazoHora[$jogo->id] = date('Y-m-d H:i', strtotime('-30 minutes', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
         }
 
-        $this->set(compact('jogos', 'rodadas', 'prazoHora'));
+        $this->set(compact('jogos', 'rodadas', 'prazoHora', 'apostas'));
+    }
+
+    private function _verificarRodadaAtual()
+    {
+        $hoje = date('Y-m-d');
+        $rodadas = $this->Jogos->find('all', [
+            'fields' => ['Rodadas.id'],
+            'contain' => ['Rodadas'],
+            'conditions' => ['data >=' => $hoje, 'data >' => '1900-01-01']
+        ])->first();
+
+        return $rodadas->rodada->id;
+    }
+
+    private function _organizarApostasJogador($jogos)
+    {
+        $apostaJogo = [];
+        foreach ($jogos as $jogo) {
+            $apostaJogo[$jogo->id] = ['time1' => '', 'time2' => '', 'id' => ''];
+            foreach ($jogo->apostas as $aposta) {
+                $apostaJogo[$aposta->jogos_id] = ['time1' => $aposta->placar1, 'time2' => $aposta->placar2, 'id' => $aposta->id];
+            }
+        }
+
+        return $apostaJogo;
     }
 
     /**

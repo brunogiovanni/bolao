@@ -53,6 +53,9 @@ class JogosTable extends Table
             'bindingKey' => 'id_api',
             'joinType' => 'INNER'
         ]);
+        $this->hasMany('Apostas', [
+            'foreignKey' => 'jogos_id'
+        ]);
     }
 
     /**

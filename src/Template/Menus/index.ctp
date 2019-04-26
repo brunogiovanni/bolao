@@ -19,7 +19,6 @@
             <tr>
                 <th scope="col"><?= $this->Paginator->sort('nome') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('tipo') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('icone') ?></th>
                 <th scope="col" class="actions"></th>
             </tr>
         </thead>
@@ -27,8 +26,7 @@
             <?php foreach ($menus as $menu): ?>
             <tr>
                 <td><?= h($menu->nome) ?></td>
-                <td><?= h($tipo) ?></td>
-                <td><?= h($menu->icone) ?></td>
+                <td><?= h($menu->tipo) ?></td>
                 <td class="actions">
                     <?= $this->Html->link('<i class="fas fa-edit"></i>', ['action' => 'edit', $menu->id], ['escape' => false, 'title' => 'Editar registro']) ?>
                     <?= $this->Form->postLink('<i class="fas fa-trash-alt text-danger"></i>', ['action' => 'delete', $menu->id], ['confirm' => __('Deseja excluir o menu {0}?', $menu->nome), 'escape' => false, 'title' => 'Excluir registro']) ?>
