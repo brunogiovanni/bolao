@@ -71,6 +71,11 @@ class UsersController extends AppController
             $data['ativo'] = 'S';
             $user = $this->Users->patchEntity($user, $data);
             if ($this->Users->save($user)) {
+                $logs = [];
+                $logs['users_id'] = $this->Auth->user('id');
+                $logs['tela'] = '/users/add/' . $user->id;
+                $logs['created'] = date('Y-m-d H:i:s');
+                $this->salvarLog($logs);
                 $this->Flash->success('Registro salvo com sucesso!', ['key' => 'users']);
 
                 return $this->redirect(['action' => 'index']);
@@ -101,6 +106,11 @@ class UsersController extends AppController
             $data['ativo'] = 'S';
             $user = $this->Users->patchEntity($user, $data);
             if ($this->Users->save($user)) {
+                $logs = [];
+                $logs['users_id'] = $this->Auth->user('id');
+                $logs['tela'] = '/users/edit/' . $id;
+                $logs['created'] = date('Y-m-d H:i:s');
+                $this->salvarLog($logs);
                 $this->Flash->success('Registro atualizado com sucesso!', ['key' => 'users']);
 
                 return $this->redirect(['action' => 'index']);
@@ -155,6 +165,11 @@ class UsersController extends AppController
             $user = $this->Auth->identify();
             if ($user) {
                 if ($user['ativo'] === 'S') {
+                    $logs = [];
+                    $logs['users_id'] = $user['id'];
+                    $logs['tela'] = '/users/login';
+                    $logs['created'] = date('Y-m-d H:i:s');
+                    $this->salvarLog($logs);
                     $this->Auth->setUser($user);
                     return $this->redirect($this->Auth->redirectUrl());
                 } else {
@@ -250,6 +265,12 @@ class UsersController extends AppController
                     $email->to($user->email)
                         ->subject('Recuperação de senha')
                         ->send($mensagem);
+
+                    $logs = [];
+                    $logs['users_id'] = $user->id;
+                    $logs['tela'] = '/users/recuperarSenha';
+                    $logs['created'] = date('Y-m-d H:i:s');
+                    $this->salvarLog($logs);
                 }
                 $this->Flash->success('Nova senha foi enviada para o seu e-mail. Verifique sua caixa de entrada e/ou SPAM.', ['key' => 'login']);
                 $this->redirect(['action' => 'login']);
@@ -310,7 +331,7 @@ class UsersController extends AppController
             \PagSeguro\Configuration\Configure::getAccountCredentials()
         );
         $credential = \PagSeguro\Configuration\Configure::getAccountCredentials();
-        
+
         $pagseguro = new \PagSeguro\Domains\Requests\Payment();
         $pagseguro->setSender()->setName('Bruno Giovanni');
         $pagseguro->setSender()->setEmail('bginfo7@gmail.com');

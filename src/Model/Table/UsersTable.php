@@ -46,6 +46,10 @@ class UsersTable extends Table
         $this->hasMany('Pontos', [
             'foreignKey' => 'users_id'
         ]);
+
+        $this->hasMany('Apostas', [
+            'foreignKey' => 'users_id'
+        ]);
     }
 
     /**

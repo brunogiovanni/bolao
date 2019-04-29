@@ -29,7 +29,8 @@ class PontosController extends AppController
         $jogo = [];
         $this->paginate['fields'] = ['Pontos.id', 'Pontos.pontos', 'Users.nome', 'Apostas.id', 'Jogos.id', 'Fora.brasao', 'Fora.descricao', 'Mandante.brasao', 'Mandante.descricao'];
         $this->paginate['contain'] = ['Users', 'Apostas' => ['Jogos' => ['Fora', 'Mandante']]];
-        if ($this->Auth->user('group_id') === 3) {
+        // $this->paginate['order'] = ['Jogos.data' => 'ASC', 'Jogos.horario' => 'ASC', 'Pontos.pontos' => 'DESC'];
+        if (in_array($this->Auth->user('group_id'), [2, 3])) {
             $this->paginate['conditions'] = ['Pontos.users_id' => $this->Auth->user('id')];
         }
         if (!empty($jogoId)) {
@@ -39,8 +40,28 @@ class PontosController extends AppController
             ]);
         }
         $pontos = $this->paginate($this->Pontos);
+        if ($this->Auth->user('group_id') === 1) {
+            $jogosId = $this->_verificarJogosEncerrados();
+        } else {
+            $jogosId = [];
+        }
 
-        $this->set(compact('pontos', 'jogo'));
+        $this->set(compact('pontos', 'jogo', 'jogosId'));
+    }
+
+    private function _verificarJogosEncerrados()
+    {
+        $jogos = $this->Pontos->Apostas->Jogos->find('all', [
+            'fields' => ['id'],
+            'conditions' => ['data <' => date('Y-m-d'), 'data <>' => '1900-01-01']
+        ]);
+
+        $jogosId = [];
+        foreach ($jogos as $jogo) {
+            $jogosId[] = $jogo->id;
+        }
+
+        return $jogosId;
     }
 
     /**
@@ -59,36 +80,84 @@ class PontosController extends AppController
         $this->set('ponto', $ponto);
     }
 
-    public function contabilizarPontos($jogoId)
+    public function contabilizarPontos($jogoId = null)
     {
         $this->request->allowMethod(['post']);
 
-        // $regras = $this->Regras->find('all');
-        $apostas = $this->Pontos->Apostas->find('all', [
-            'conditions' => ['jogos_id' => $jogoId]
-        ]);
-        $jogo = $this->Pontos->Apostas->Jogos->get($jogoId);
-        $data = [];
-        foreach ($apostas as $aposta) {
-            if ($aposta->placar1 === $jogo->placar1 && $aposta->placar2 === $jogo->placar2) {
-                $data[] = ['pontos' => 10, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
-            } elseif (($aposta->placar1 === $jogo->placar1 || $aposta->placar2 === $jogo->placar2) && ((!empty($jogo->vencedor) && $aposta->vencedor !== 0) && $jogo->vencedor === $aposta->vencedor)) {
-                $data[] = ['pontos' => 7, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
-            } elseif ((!empty($jogo->vencedor) && $aposta->vencedor !== 0) && ($jogo->vencedor === $aposta->vencedor)) {
-                $data[] = ['pontos' => 5, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
-            } elseif ($aposta->placar1 === $jogo->placar1 || $aposta->placar2 === $jogo->placar2) {
-                $data[] = ['pontos' => 2, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
-            } else {
-                $data[] = ['pontos' => 0, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+        if (empty($jogoId)) {
+            $jogoId = $this->request->getData('jogosId');
+        }
+        if (is_array($jogoId)) {
+            for ($i = 0; $i < count($jogoId); $i++) {
+                $apostas = $this->Pontos->Apostas->find('all', [
+                    'conditions' => ['jogos_id' => $jogoId[$i]]
+                ]);
+                $jogo = $this->Pontos->Apostas->Jogos->get($jogoId[$i]);
+                $data = [];
+                foreach ($apostas as $aposta) {
+                    if ($this->_verificarApostaContabilizada($aposta->id)) {
+                        if ($aposta->placar1 === $jogo->placar1 && $aposta->placar2 === $jogo->placar2) {
+                            $data[] = ['pontos' => 10, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+                        } elseif (($aposta->placar1 === $jogo->placar1 || $aposta->placar2 === $jogo->placar2) && ((!empty($jogo->vencedor) && $aposta->vencedor !== 0) && $jogo->vencedor === $aposta->vencedor)) {
+                            $data[] = ['pontos' => 7, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+                        } elseif ((!empty($jogo->vencedor) && $aposta->vencedor !== 0) && ($jogo->vencedor === $aposta->vencedor)) {
+                            $data[] = ['pontos' => 5, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+                        } elseif ($aposta->placar1 === $jogo->placar1 || $aposta->placar2 === $jogo->placar2) {
+                            $data[] = ['pontos' => 2, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+                        } else {
+                            $data[] = ['pontos' => 0, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+                        }
+                    }
+                }
+                if (!empty($data)) {
+                    $pontos = $this->Pontos->newEntities($data);
+                    if ($this->Pontos->saveMany($pontos)) {
+                        $this->Flash->success('Pontos contabilizados como sucesso', ['key' => 'pontos']);
+                    } else {
+                        $this->Flash->error('Erro ao contabilizar pontos! Tente novamente!', ['key' => 'pontos']);
+                    }
+                } else {
+                    $this->Flash->info('Pontos já contabilizados!', ['key' => 'pontos']);
+                }
             }
+            return $this->redirect(['controller' => 'Pontos', 'action' => 'index']);
+        } else {
+            // $regras = $this->Regras->find('all');
+            $apostas = $this->Pontos->Apostas->find('all', [
+                'conditions' => ['jogos_id' => $jogoId]
+            ]);
+            $jogo = $this->Pontos->Apostas->Jogos->get($jogoId);
+            $data = [];
+            foreach ($apostas as $aposta) {
+                if ($aposta->placar1 === $jogo->placar1 && $aposta->placar2 === $jogo->placar2) {
+                    $data[] = ['pontos' => 10, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+                } elseif (($aposta->placar1 === $jogo->placar1 || $aposta->placar2 === $jogo->placar2) && ((!empty($jogo->vencedor) && $aposta->vencedor !== 0) && $jogo->vencedor === $aposta->vencedor)) {
+                    $data[] = ['pontos' => 7, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+                } elseif ((!empty($jogo->vencedor) && $aposta->vencedor !== 0) && ($jogo->vencedor === $aposta->vencedor)) {
+                    $data[] = ['pontos' => 5, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+                } elseif ($aposta->placar1 === $jogo->placar1 || $aposta->placar2 === $jogo->placar2) {
+                    $data[] = ['pontos' => 2, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+                } else {
+                    $data[] = ['pontos' => 0, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+                }
+            }
+            $pontos = $this->Pontos->newEntities($data);
+            if ($this->Pontos->saveMany($pontos)) {
+                $this->Flash->success('Pontos contabilizados como sucesso', ['key' => 'pontos']);
+                return $this->redirect(['action' => 'index', $jogoId]);
+            }
+            $this->Flash->error('Erro ao contabilizar pontos! Tente novamente!', ['key' => 'apostas']);
+            return $this->redirect(['controller' => 'Apostas', 'action' => 'index', $jogoId]);
         }
-        $pontos = $this->Pontos->newEntities($data);
-        if ($this->Pontos->saveMany($pontos)) {
-            $this->Flash->success('Pontos contabilizados como sucesso', ['key' => 'pontos']);
-            return $this->redirect(['action' => 'index', $jogoId]);
+    }
+
+    private function _verificarApostaContabilizada($apostaId)
+    {
+        $pontos = $this->Pontos->find('all', ['conditions' => ['apostas_id' => $apostaId]]);
+        if ($pontos->count() > 0) {
+            return false;
         }
-        $this->Flash->error('Erro ao contabilizar pontos! Tente novamente!', ['key' => 'apostas']);
-        return $this->redirect(['controller' => 'Apostas', 'action' => 'index', $jogoId]);
+        return true;
     }
 
     /**

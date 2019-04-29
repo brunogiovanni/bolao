@@ -68,17 +68,17 @@ class AppController extends Controller
     private function _configurarGrowlytics()
     {
         \Growlytics\Growlytics::init([
-    
+
             'project_id' => '46ru4om5ejuycbr5z',
             'api_key' => '46ru4om5ejuycbr5x46ru4om5ejuycbr5y',
-            
+
             // Enable disable plugin, by default its enable if not provided
             'enabled' => true,
-        
+
             // Make sure env matches with browser's env
             'env' => env('APP_ENV'),
-            
-            
+
+
             'skip_api_fields' => ['pwd', 'name'],
         ]);
 
@@ -159,6 +159,14 @@ class AppController extends Controller
             $this->_montarMenu();
             $this->set('usuario', $this->Auth->user());
         }
+    }
+
+    protected function salvarLog(array $logs)
+    {
+        $this->loadModel('Logs');
+        $log = $this->Logs->newEntity();
+        $log = $this->Logs->patchEntity($log, $logs);
+        $this->Logs->save($log);
     }
 
     /**

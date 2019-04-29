@@ -17,6 +17,18 @@
             <?php endif; ?>
         </h3>
     </div>
+    <div class="col">
+        <?php
+        if ($usuario['group_id'] === 1) {
+            echo $this->Form->create('', ['action' => 'contabilizarPontos']);
+            for ($i = 0; $i < count($jogosId); $i++) {
+                echo $this->Form->hidden('jogosId[]', ['value' => $jogosId[$i]]);
+            }
+            echo $this->Form->submit('Contabilizar Pontos', ['class' => 'btn btn-primary']);
+            echo $this->Form->end();
+        }
+        ?>
+    </div>
 </div>
 <?php echo $this->Flash->render('pontos'); ?>
 <div class="table-responsive">

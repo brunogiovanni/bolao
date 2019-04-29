@@ -75,6 +75,7 @@
                                 echo $this->Html->link('Menus', ['controller' => 'Menus', 'action' => 'index'], ['class' => 'dropdown-item']);
                                 echo $this->Html->link('Grupos', ['controller' => 'Groups', 'action' => 'index'], ['class' => 'dropdown-item']);
                                 echo $this->Html->link('Permissões', '/AclManager', ['class' => 'dropdown-item', 'target' => '_blank']);
+                                echo $this->Html->link('Logs', ['controller' => 'Logs', 'action' => 'index'], ['class' => 'dropdown-item']);
                                 ?>
                             </div>
                         </li>
