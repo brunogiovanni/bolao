@@ -39,6 +39,7 @@
                 <th scope="col"><?= $this->Paginator->sort('pontos') ?></th>
                 <?php if (empty($jogo)) : ?>
                     <th scope="col"><?= $this->Paginator->sort('Apostas.jogos_id', 'Jogo') ?></th>
+                    <th scope="col"><?= $this->Paginator->sort('Rodadas.numero_rodada', 'Rodada') ?></th>
                 <?php endif; ?>
             </tr>
         </thead>
@@ -61,6 +62,7 @@
                         ]);
                         ?>
                     </td>
+                    <td><?php echo $ponto->aposta->jogo->rodada->numero_rodada; ?></td>
                 <?php endif; ?>
             </tr>
             <?php endforeach; ?>

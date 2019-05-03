@@ -17,8 +17,8 @@
                 <?php echo $this->Form->control('rodada', [
                     'label' => 'Rodada:', 'class' => 'form-control',
                     'options' => $rodadas,
-                    'val' => (!empty($this->request->getQuery('rodada'))) ? $this->request->getQuery('rodada') : '',
-                    'default' => 1
+                    'val' => (!empty($this->request->getQuery('rodada'))) ? $this->request->getQuery('rodada') : 3,
+                    'default' => 2
                 ]); ?>
             </div>
             <div class="col-sm-1">

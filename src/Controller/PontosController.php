@@ -27,8 +27,10 @@ class PontosController extends AppController
     public function index($jogoId = null)
     {
         $jogo = [];
-        $this->paginate['fields'] = ['Pontos.id', 'Pontos.pontos', 'Users.nome', 'Apostas.id', 'Jogos.id', 'Fora.brasao', 'Fora.descricao', 'Mandante.brasao', 'Mandante.descricao'];
-        $this->paginate['contain'] = ['Users', 'Apostas' => ['Jogos' => ['Fora', 'Mandante']]];
+        $this->paginate['fields'] = ['Pontos.id', 'Pontos.pontos', 'Users.nome', 'Apostas.id', 
+            'Jogos.id', 'Fora.brasao', 'Fora.descricao', 'Mandante.brasao', 'Mandante.descricao', 'Rodadas.numero_rodada'];
+        $this->paginate['contain'] = ['Users', 'Apostas' => ['Jogos' => ['Fora', 'Mandante', 'Rodadas']]];
+        $this->paginate['order'] = ['Rodadas.numero_rodada' => 'DESC'];
         // $this->paginate['order'] = ['Jogos.data' => 'ASC', 'Jogos.horario' => 'ASC', 'Pontos.pontos' => 'DESC'];
         if (in_array($this->Auth->user('group_id'), [2, 3])) {
             $this->paginate['conditions'] = ['Pontos.users_id' => $this->Auth->user('id')];
@@ -39,7 +41,15 @@ class PontosController extends AppController
                 'contain' => ['Fora', 'Mandante']
             ]);
         }
-        $pontos = $this->paginate($this->Pontos);
+        $jogos = $this->Pontos->find('all', [
+            'contain' => $this->paginate['contain'],
+            'conditions' => $this->paginate['conditions'],
+            'order' => $this->paginate['order']
+        ]);
+        // debug($teste);
+        // exit();
+        $pontos = $this->paginate($jogos);
+        // $pontos = $this->paginate($this->Pontos);
         if ($this->Auth->user('group_id') === 1) {
             $jogosId = $this->_verificarJogosEncerrados();
         } else {

@@ -31,6 +31,8 @@ class JogosController extends AppController
         }
         if (!empty($this->request->getQuery('rodada'))) {
             array_push($conditions, ['rodadas_id' => $this->request->getQuery('rodada')]);
+        } else {
+            array_push($conditions, ['rodadas_id' => 3]);
         }
         // else {
         //     $numeroRodada = $this->_verificarRodadaAtual();

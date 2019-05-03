@@ -75,38 +75,26 @@
             <tr>
                 <td><?= $aposta->has('user') ? $aposta->user->nome : '' ?></td>
                 <td>
-                    <div class="row">
-                        <div class="col-8 col-sm-6 col-md-4 col-lg-3 col-xl-3">
-                            <?= $this->Html->image($aposta->jogo->mandante->brasao, [
-                                'class' => 'img-fluid', 'title' => $aposta->jogo->mandante->brasao
-                            ]) ?>
-                        </div>
-                        <?= $aposta->placar1 ?>
-                        X
-                        <?= $aposta->placar2 ?>
-                        <div class="col-8 col-sm-6 col-md-4 col-lg-3 col-xl-3">
-                            <?= $this->Html->image($aposta->jogo->fora->brasao, [
-                                'class' => 'img-fluid', 'title' => $aposta->jogo->fora->brasao
-                            ]) ?>
-                        </div>
-                    </div>
+                    <?= $this->Html->image($aposta->jogo->mandante->brasao, [
+                        'class' => 'img-fluid', 'title' => $aposta->jogo->mandante->brasao
+                    ]) ?>
+                    <?= $aposta->placar1 ?>
+                    X
+                    <?= $aposta->placar2 ?>
+                    <?= $this->Html->image($aposta->jogo->fora->brasao, [
+                        'class' => 'img-fluid', 'title' => $aposta->jogo->fora->brasao
+                    ]) ?>
                 </td>
                 <td>
-                    <div class="row">
-                        <div class="col-8 col-sm-6 col-md-4 col-lg-3 col-xl-3">
-                            <?= $this->Html->image($aposta->jogo->mandante->brasao, [
-                                'class' => 'img-fluid', 'title' => $aposta->jogo->mandante->brasao
-                            ]) ?>
-                        </div>
-                        <?= $aposta->jogo->placar1 ?>
-                        X
-                        <?= $aposta->jogo->placar2 ?>
-                        <div class="col-8 col-sm-6 col-md-4 col-lg-3 col-xl-3">
-                            <?= $this->Html->image($aposta->jogo->fora->brasao, [
-                                'class' => 'img-fluid', 'title' => $aposta->jogo->fora->brasao
-                            ]) ?>
-                        </div>
-                    </div>
+                    <?= $this->Html->image($aposta->jogo->mandante->brasao, [
+                        'class' => 'img-fluid', 'title' => $aposta->jogo->mandante->brasao
+                    ]) ?>
+                    <?= $aposta->jogo->placar1 ?>
+                    X
+                    <?= $aposta->jogo->placar2 ?>
+                    <?= $this->Html->image($aposta->jogo->fora->brasao, [
+                        'class' => 'img-fluid', 'title' => $aposta->jogo->fora->brasao
+                    ]) ?>
                 </td>
                 <td>
                     <?= $aposta->jogo->rodada->numero_rodada; ?>

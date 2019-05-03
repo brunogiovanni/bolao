@@ -48,7 +48,7 @@ class ApostasController extends AppController
             'conditions' => ['id NOT IN' => [1, 7]],
             'order' => ['nome' => 'ASC']
         ]);
-        $rodadas = $this->Apostas->Jogos->Rodadas->find('list', ['conditions' => ['numero_rodada IN' => [1]]]);
+        $rodadas = $this->Apostas->Jogos->Rodadas->find('list', ['conditions' => ['numero_rodada IN' => [1, 2]]]);
         $this->set(compact('apostas', 'jogo', 'prazoHora', 'horaPosJogo', 'pontos', 'users', 'rodadas'));
     }
 
