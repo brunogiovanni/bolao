@@ -20,6 +20,7 @@ class RegrasController extends AppController
      */
     public function index()
     {
+        $this->paginate['order'] = ['pontos' => 'desc'];
         $regras = $this->paginate($this->Regras);
 
         $this->set(compact('regras'));

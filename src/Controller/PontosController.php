@@ -46,10 +46,7 @@ class PontosController extends AppController
             'conditions' => $this->paginate['conditions'],
             'order' => $this->paginate['order']
         ]);
-        // debug($teste);
-        // exit();
         $pontos = $this->paginate($jogos);
-        // $pontos = $this->paginate($this->Pontos);
         if ($this->Auth->user('group_id') === 1) {
             $jogosId = $this->_verificarJogosEncerrados();
         } else {
@@ -100,6 +97,7 @@ class PontosController extends AppController
         if (is_array($jogoId)) {
             for ($i = 0; $i < count($jogoId); $i++) {
                 $apostas = $this->Pontos->Apostas->find('all', [
+                    'contain' => ['Jogos'],
                     'conditions' => ['jogos_id' => $jogoId[$i]]
                 ]);
                 $jogo = $this->Pontos->Apostas->Jogos->get($jogoId[$i]);
@@ -112,6 +110,8 @@ class PontosController extends AppController
                             $data[] = ['pontos' => 7, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
                         } elseif ((!empty($jogo->vencedor) && $aposta->vencedor !== 0) && ($jogo->vencedor === $aposta->vencedor)) {
                             $data[] = ['pontos' => 5, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+                        } elseif ($this->_calcularResultado($aposta->placar1, $aposta->placar2, $jogo->placar1, $jogo->placar2)) {
+                            $data[] = ['pontos' => 5, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id, 'resultado'];
                         } elseif ($aposta->placar1 === $jogo->placar1 || $aposta->placar2 === $jogo->placar2) {
                             $data[] = ['pontos' => 2, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
                         } else {
@@ -132,7 +132,6 @@ class PontosController extends AppController
             }
             return $this->redirect(['controller' => 'Pontos', 'action' => 'index']);
         } else {
-            // $regras = $this->Regras->find('all');
             $apostas = $this->Pontos->Apostas->find('all', [
                 'conditions' => ['jogos_id' => $jogoId]
             ]);
@@ -145,6 +144,8 @@ class PontosController extends AppController
                     $data[] = ['pontos' => 7, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
                 } elseif ((!empty($jogo->vencedor) && $aposta->vencedor !== 0) && ($jogo->vencedor === $aposta->vencedor)) {
                     $data[] = ['pontos' => 5, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
+                } elseif ($this->_calcularResultado($aposta->placar1, $aposta->placar2, $jogo->placar1, $jogo->placar2)) {
+                    $data[] = ['pontos' => 5, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id, 'resultado'];
                 } elseif ($aposta->placar1 === $jogo->placar1 || $aposta->placar2 === $jogo->placar2) {
                     $data[] = ['pontos' => 2, 'users_id' => $aposta->users_id, 'apostas_id' => $aposta->id];
                 } else {
@@ -159,6 +160,16 @@ class PontosController extends AppController
             $this->Flash->error('Erro ao contabilizar pontos! Tente novamente!', ['key' => 'apostas']);
             return $this->redirect(['controller' => 'Apostas', 'action' => 'index', $jogoId]);
         }
+    }
+
+    private function _calcularResultado($aposta1, $aposta2, $placar1, $placar2)
+    {
+        $saldoGols = $placar1 - $placar2;
+        $aposta = $aposta1 - $aposta2;
+        if ($saldoGols === $aposta) {
+            return true;
+        }
+        return false;
     }
 
     private function _verificarApostaContabilizada($apostaId)

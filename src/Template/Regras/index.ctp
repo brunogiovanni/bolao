@@ -12,7 +12,7 @@
     <table class="table table-striped table-hovered">
         <thead>
             <tr>
-                <th scope="col"><?= $this->Paginator->sort('descricao') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('descricao', 'Descrição') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('pontos') ?></th>
             </tr>
         </thead>
