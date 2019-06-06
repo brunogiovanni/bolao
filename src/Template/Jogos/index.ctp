@@ -4,29 +4,31 @@
         <h3>Rodadas</h3>
     </div>
     <div class="col-sm-9">
-        <?php echo $this->Form->create('', ['method' => 'get']); ?>
-        <div class="row">
-            <!-- <div class="col-sm-3">
-                <?php echo $this->Form->control('data', [
-                    'label' => 'Data:', 'class' => 'form-control',
-                    'placeholder' => date('d/m/Y'),
-                    'val' => (!empty($this->request->getQuery('data'))) ? $this->request->getQuery('data') : ''
-                ]); ?>
-            </div> -->
-            <div class="col-sm-2">
-                <?php echo $this->Form->control('rodada', [
-                    'label' => 'Rodada:', 'class' => 'form-control',
-                    'options' => $rodadas,
-                    'val' => (!empty($this->request->getQuery('rodada'))) ? $this->request->getQuery('rodada') : 7,
-                    'default' => 7
-                ]); ?>
+        <?php if ($usuario['group_id'] === 1) : ?>
+            <?php echo $this->Form->create('', ['method' => 'get']); ?>
+            <div class="row">
+                <!-- <div class="col-sm-3">
+                    <?php echo $this->Form->control('data', [
+                        'label' => 'Data:', 'class' => 'form-control',
+                        'placeholder' => date('d/m/Y'),
+                        'val' => (!empty($this->request->getQuery('data'))) ? $this->request->getQuery('data') : ''
+                    ]); ?>
+                </div> -->
+                <div class="col-sm-2">
+                    <?php echo $this->Form->control('rodada', [
+                        'label' => 'Rodada:', 'class' => 'form-control',
+                        'options' => $rodadas,
+                        'val' => (!empty($this->request->getQuery('rodada'))) ? $this->request->getQuery('rodada') : 7,
+                        'default' => 7
+                    ]); ?>
+                </div>
+                <div class="col-sm-1">
+                    <label>  </label>
+                    <?php echo $this->Form->button('<i class="fas fa-search"></i>', ['class' => 'btn btn-info', 'escape' => false, 'title' => 'Pesquisar']); ?>
+                </div>
             </div>
-            <div class="col-sm-1">
-                <label>  </label>
-                <?php echo $this->Form->button('<i class="fas fa-search"></i>', ['class' => 'btn btn-info', 'escape' => false, 'title' => 'Pesquisar']); ?>
-            </div>
-        </div>
-        <?php echo $this->Form->end(); ?>
+            <?php echo $this->Form->end(); ?>
+        <?php endif; ?>
     </div>
 </div>
 <div id="mensagem-sucesso" style="display: none;">
