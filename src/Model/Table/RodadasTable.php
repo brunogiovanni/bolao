@@ -62,6 +62,10 @@ class RodadasTable extends Table
             ->date('data_final')
             ->requirePresence('data_final', 'create')
             ->allowEmptyDate('data_final', false);
+        
+        $validator
+            ->requirePresence('atual', 'create')
+            ->allowEmptyString('atual', false);
 
         return $validator;
     }

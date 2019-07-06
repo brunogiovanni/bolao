@@ -10,6 +10,7 @@ use Cake\ORM\Entity;
  * @property int $numero_rodada
  * @property \Cake\I18n\FrozenDate $data_inicio
  * @property \Cake\I18n\FrozenDate $data_final
+ * @property string $atual
  */
 class Rodada extends Entity
 {
@@ -26,6 +27,7 @@ class Rodada extends Entity
     protected $_accessible = [
         'numero_rodada' => true,
         'data_inicio' => true,
-        'data_final' => true
+        'data_final' => true,
+        'atual' => true
     ];
 }

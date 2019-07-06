@@ -57,11 +57,11 @@ class RodadasController extends AppController
         if ($this->request->is('post')) {
             $rodada = $this->Rodadas->patchEntity($rodada, $this->request->getData());
             if ($this->Rodadas->save($rodada)) {
-                $this->Flash->success(__('The rodada has been saved.'));
+                $this->Flash->success('Registro incluído', ['key' => 'rodadas']);
 
                 return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('The rodada could not be saved. Please, try again.'));
+            $this->Flash->error('Erro ao cadastrar! Tente novamente!', ['key' => 'rodadas']);
         }
         $this->set(compact('rodada'));
     }
@@ -79,15 +79,35 @@ class RodadasController extends AppController
             'contain' => []
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
-            $rodada = $this->Rodadas->patchEntity($rodada, $this->request->getData());
+            $rodada->atual = ($rodada->atual === 'N') ? 'S' : 'N';
+            $data = $rodada->toArray();
+            $rodada = $this->Rodadas->patchEntity($rodada, $data);
             if ($this->Rodadas->save($rodada)) {
-                $this->Flash->success(__('The rodada has been saved.'));
+                $this->_atualizarRodadaAnterior($id);
+                $this->Flash->success('Registro atualizado', ['key' => 'rodadas']);
 
                 return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('The rodada could not be saved. Please, try again.'));
+            $this->Flash->error('Erro ao atualizar registro! Tente novamente', ['key' => 'rodadas']);
         }
         $this->set(compact('rodada'));
+    }
+    
+    /**
+     * Atualiza a rodada anterior setando "N" ao campo "atual"
+     * @param int $idAtual
+     */
+    private function _atualizarRodadaAnterior($idAtual)
+    {
+        $rodadas = $this->Rodadas->find('all', [
+            'conditions' => ['atual' => 'S', 'id <>' => $idAtual]
+        ]);
+        $atualizar = [];
+        foreach ($rodadas as $rodada) {
+            $rodada->atual = 'N';
+            $atualizar[] = $rodada;
+        }
+        $this->Rodadas->saveMany($atualizar);
     }
 
     /**

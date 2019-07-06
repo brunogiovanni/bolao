@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 use Cake\Event\Event;
+use App\Model\Entity\Jogo;
 
 /**
  * Jogos Controller
@@ -32,12 +33,10 @@ class JogosController extends AppController
         if (!empty($this->request->getQuery('rodada'))) {
             array_push($conditions, ['rodadas_id' => $this->request->getQuery('rodada')]);
         } else {
-            array_push($conditions, ['rodadas_id' => 8]);
+            $rodadaAtual = $this->_pegarRodadaAtual();
+            array_push($conditions, ['rodadas_id' => $rodadaAtual]);
         }
-        // else {
-        //     $numeroRodada = $this->_verificarRodadaAtual();
-        //     array_push($conditions, ['rodadas_id' => $numeroRodada]);
-        // }
+        
         $this->paginate['conditions'] = $conditions;
         $this->paginate['contain'] = ['Rodadas', 'Fora', 'Mandante', 'Apostas' => ['conditions' => ['Apostas.users_id' => $this->Auth->user('id')]]];
         $this->paginate['order'] = ['rodadas_id' => 'ASC', 'data' => 'asc', 'horario' => 'asc'];
@@ -53,19 +52,27 @@ class JogosController extends AppController
 
         $this->set(compact('jogos', 'rodadas', 'prazoHora', 'apostas'));
     }
-
-    private function _verificarRodadaAtual()
+    
+    /**
+     * Pega a rodada marcada como atual
+     * 
+     * @return int Código da rodada
+     */
+    private function _pegarRodadaAtual()
     {
-        $hoje = date('Y-m-d');
-        $rodadas = $this->Jogos->find('all', [
-            'fields' => ['Rodadas.id'],
-            'contain' => ['Rodadas'],
-            'conditions' => ['data >=' => $hoje, 'data >' => '1900-01-01']
+        $rodada = $this->Jogos->Rodadas->find('all', [
+            'conditions' => ['atual' => 'S']
         ])->first();
-
-        return $rodadas->rodada->id;
+        
+        return $rodada->id;
     }
 
+    /**
+     * Organiza as apostas do usuário por código do jogo
+     * 
+     * @param Jogo $jogos
+     * @return array
+     */
     private function _organizarApostasJogador($jogos)
     {
         $apostaJogo = [];
