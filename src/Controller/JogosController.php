@@ -31,6 +31,7 @@ class JogosController extends AppController
             $conditions = ['data' => $this->converterData($this->request->getQuery('data'))];
         }
         if (!empty($this->request->getQuery('rodada'))) {
+            $rodadaAtual = $this->request->getQuery('rodada');
             array_push($conditions, ['rodadas_id' => $this->request->getQuery('rodada')]);
         } else {
             $rodadaAtual = $this->_pegarRodadaAtual();
@@ -45,12 +46,33 @@ class JogosController extends AppController
         $jogos = $this->paginate($this->Jogos);
         $rodadas = $this->Jogos->Rodadas->find('list', ['order' => ['numero_rodada' => 'asc']]);
         $apostas = $this->_organizarApostasJogador($jogos);
+        
+        $partidasAdiadas = $this->_verificarJogosAdiados($rodadaAtual);
+        $apostasAdiadas = $this->_organizarApostasJogador($partidasAdiadas);
 
         foreach ($jogos as $jogo) {
             $prazoHora[$jogo->id] = date('Y-m-d H:i', strtotime('-30 minutes', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
         }
 
-        $this->set(compact('jogos', 'rodadas', 'prazoHora', 'apostas'));
+        $this->set(compact('jogos', 'rodadas', 'prazoHora', 'apostas', 'rodadaAtual', 'partidasAdiadas', 'apostasAdiadas'));
+    }
+    
+    /**
+     * Verifica partidas adiadas de rodadas anteriores
+     * @param int $rodadaAtual
+     * @return \Cake\ORM\Query
+     */
+    private function _verificarJogosAdiados($rodadaAtual)
+    {
+        $adiados = $this->Jogos->find('all', [
+            'fields' => ['Jogos.rodadas_id', 'Jogos.id', 'Jogos.horario', 'Jogos.data', 'Rodadas.numero_rodada', 'Jogos.estadio', 'Mandante.descricao', 'Fora.descricao', 'Mandante.brasao', 'Fora.brasao', 'Jogos.casa', 'Jogos.visitante', 'Jogos.placar1', 'Jogos.placar2'],
+            'conditions' => ['rodadas_id <' => $rodadaAtual, 'placar1 IS NULL', 'placar2 IS NULL'],
+            'contain' => ['Rodadas', 'Fora', 'Mandante', 'Apostas' => ['conditions' => ['Apostas.users_id' => $this->Auth->user('id')]]],
+            'group' => ['Jogos.rodadas_id', 'Jogos.id', 'Jogos.horario', 'Jogos.data', 'Rodadas.numero_rodada', 'Jogos.estadio', 'Mandante.descricao', 'Fora.descricao', 'Mandante.brasao', 'Fora.brasao', 'Jogos.casa', 'Jogos.visitante', 'Jogos.placar1', 'Jogos.placar2'],
+            'order' => ['rodadas_id' => 'ASC', 'data' => 'asc', 'horario' => 'asc']
+        ]);
+        
+        return $adiados;
     }
     
     /**

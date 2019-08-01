@@ -39,6 +39,18 @@ function salvarApostas() {
                 time2: $('#time2-' + i).val(),
             });
         }
+        if (adiados) {
+        	if (($('#placar-mandante-adiado-' + i).val() !== null && $('#placar-mandante-adiado-' + i).val() !== '' && $('#placar-mandante-adiado-' + i).val() !== undefined) && ($('#placar-visitante-adiado-' + i).val() !== null && $('#placar-visitante-adiado-' + i).val() !== '' && $('#placar-visitante-adiado-' + i).val() !== undefined)) {
+                placares.push({
+                    id: $('#id-aposta-adiado-' + i).val(),
+                    placar1: $('#placar-mandante-adiado-' + i).val(),
+                    placar2: $('#placar-visitante-adiado-' + i).val(),
+                    jogos_id: $('#jogo-id-adiado-' + i).val(),
+                    time1: $('#time1-adiado-' + i).val(),
+                    time2: $('#time2-adiado-' + i).val(),
+                });
+            }
+        }
     }
 
     $.ajax({
