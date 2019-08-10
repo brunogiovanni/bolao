@@ -20,6 +20,7 @@ class LogsController extends AppController
     public function index()
     {
         $this->paginate['contain'] = ['Users'];
+        $this->paginate['order'] = ['created' => 'DESC'];
         $logs = $this->paginate($this->Logs);
 
         $this->set(compact('logs'));

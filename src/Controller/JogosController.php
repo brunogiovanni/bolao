@@ -49,9 +49,13 @@ class JogosController extends AppController
         
         $partidasAdiadas = $this->_verificarJogosAdiados($rodadaAtual);
         $apostasAdiadas = $this->_organizarApostasJogador($partidasAdiadas);
-
+        
+        $prazoHora = [];
         foreach ($jogos as $jogo) {
             $prazoHora[$jogo->id] = date('Y-m-d H:i', strtotime('-30 minutes', strtotime($jogo->data->format('Y-m-d') . 'T' . $jogo->horario->format('H:i'))));
+        }
+        foreach ($partidasAdiadas as $adiado) {
+            $prazoHora[$adiado->id] = date('Y-m-d H:i', strtotime('-30 minutes', strtotime($adiado->data->format('Y-m-d') . 'T' . $adiado->horario->format('H:i'))));
         }
 
         $this->set(compact('jogos', 'rodadas', 'prazoHora', 'apostas', 'rodadaAtual', 'partidasAdiadas', 'apostasAdiadas'));
