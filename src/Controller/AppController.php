@@ -247,4 +247,19 @@ class AppController extends Controller
         }
         return $headers;
     }
+    
+    /**
+     * Pega a rodada marcada como atual
+     *
+     * @return int Código da rodada
+     */
+    protected function pegarRodadaAtual()
+    {
+        $this->loadModel('Rodadas');
+        $rodada = $this->Rodadas->find('all', [
+            'conditions' => ['atual' => 'S']
+        ])->first();
+        
+        return $rodada->id;
+    }
 }

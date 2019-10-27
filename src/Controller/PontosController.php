@@ -55,6 +55,36 @@ class PontosController extends AppController
 
         $this->set(compact('pontos', 'jogo', 'jogosId'));
     }
+    
+    public function pontosPorRodada()
+    {
+        $rodadaAtual = $this->pegarRodadaAtual();
+        if (!empty($this->request->getQuery('rodada')) && $this->request->getQuery('rodada') < $rodadaAtual) {
+            $rodada = $this->request->getQuery('rodada');
+        } else {
+            $rodada = $rodadaAtual - 1;
+        }
+        $conditions = ['Jogos.rodadas_id' => $rodada];
+        $pontos = $this->Pontos->find('all', [
+            'contain' => ['Apostas' => ['Jogos'], 'Users'],
+            'conditions' => $conditions
+        ]);
+        $totalPontos = [];
+        foreach ($pontos as $ponto) {
+            if (!isset($totalPontos[$ponto->user->id])) {
+                $totalPontos[$ponto->user->id] = ['pontos' => $ponto->pontos, 'usuario' => $ponto->user->nome];
+            } else {
+                $totalPontos[$ponto->user->id]['pontos'] += $ponto->pontos;
+            }
+        }
+        arsort($totalPontos);
+        
+        $rodadas = $this->Pontos->Apostas->Jogos->Rodadas->find('list', [
+            'conditions' => ['Rodadas.id <' => $rodadaAtual]
+        ]);
+        
+        $this->set(compact('totalPontos', 'rodada', 'rodadas'));
+    }
 
     private function _verificarJogosEncerrados()
     {
@@ -126,9 +156,10 @@ class PontosController extends AppController
                     } else {
                         $this->Flash->error('Erro ao contabilizar pontos! Tente novamente!', ['key' => 'pontos']);
                     }
-                } else {
-                    $this->Flash->info('Pontos já contabilizados!', ['key' => 'pontos']);
                 }
+//                 else {
+//                     $this->Flash->info('Pontos já contabilizados!', ['key' => 'pontos']);
+//                 }
             }
             return $this->redirect(['controller' => 'Pontos', 'action' => 'index']);
         } else {

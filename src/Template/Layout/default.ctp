@@ -72,6 +72,7 @@
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <?php
+                                echo $this->Html->link('Pontos', ['controller' => 'Pontos', 'action' => 'index'], ['class' => 'dropdown-item']);
                                 echo $this->Html->link('Menus', ['controller' => 'Menus', 'action' => 'index'], ['class' => 'dropdown-item']);
                                 echo $this->Html->link('Grupos', ['controller' => 'Groups', 'action' => 'index'], ['class' => 'dropdown-item']);
                                 echo $this->Html->link('Permissões', '/AclManager', ['class' => 'dropdown-item', 'target' => '_blank']);

@@ -195,6 +195,7 @@
 if (empty($partidasAdiadas)) {
     echo $this->Html->scriptBlock('let quantidadeApostas = parseInt(' . $key . '); let adiados = false;', ['block' => 'scriptEnd']);
 } else {
+    $k = (isset($k)) ? $k : 0;
     echo $this->Html->scriptBlock('let quantidadeApostas = parseInt(' . ($key + $k) . '); let adiados = true;', ['block' => 'scriptEnd']);
 }
 echo $this->Html->script('partidas/index.js', ['block' => 'scriptEnd']);

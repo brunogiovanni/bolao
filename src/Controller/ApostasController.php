@@ -20,6 +20,7 @@ class ApostasController extends AppController
      */
     public function index($jogoId = null)
     {
+        $rodadaAtual = $this->pegarRodadaAtual();
         $this->paginate['contain'] = [
             'Users' => ['sort' => ['Users.nome' => 'asc']], 'Jogos' => ['Fora', 'Mandante', 'Rodadas'],
             'Pontos'
@@ -38,7 +39,7 @@ class ApostasController extends AppController
         if (isset($filtros['users_id']) && !empty($filtros['users_id'])) {
             array_push($this->paginate['conditions'], ['Apostas.users_id' => $filtros['users_id']]);
         }
-        if (isset($filtros['rodadas']) && !empty($filtros['rodadas'])) {
+        if (isset($filtros['rodadas']) && !empty($filtros['rodadas']) && $filtros['rodadas'] < $rodadaAtual) {
             array_push($this->paginate['conditions'], ['Rodadas.id' => $filtros['rodadas']]);
         }
         // $this->paginate['order'] = ['users_id' => 'asc'];
@@ -48,7 +49,7 @@ class ApostasController extends AppController
             'conditions' => ['id NOT IN' => [1, 7]],
             'order' => ['nome' => 'ASC']
         ]);
-        $rodadas = $this->Apostas->Jogos->Rodadas->find('list', ['conditions' => ['numero_rodada IN' => [1, 2, 3, 4, 5, 6, 7]]]);
+        $rodadas = $this->Apostas->Jogos->Rodadas->find('list', ['conditions' => ['numero_rodada <' => $rodadaAtual]]);
         $this->set(compact('apostas', 'jogo', 'prazoHora', 'horaPosJogo', 'pontos', 'users', 'rodadas'));
     }
 

@@ -34,7 +34,7 @@ class JogosController extends AppController
             $rodadaAtual = $this->request->getQuery('rodada');
             array_push($conditions, ['rodadas_id' => $this->request->getQuery('rodada')]);
         } else {
-            $rodadaAtual = $this->_pegarRodadaAtual();
+            $rodadaAtual = $this->pegarRodadaAtual();
             array_push($conditions, ['rodadas_id' => $rodadaAtual]);
         }
         
@@ -77,20 +77,6 @@ class JogosController extends AppController
         ]);
         
         return $adiados;
-    }
-    
-    /**
-     * Pega a rodada marcada como atual
-     * 
-     * @return int Código da rodada
-     */
-    private function _pegarRodadaAtual()
-    {
-        $rodada = $this->Jogos->Rodadas->find('all', [
-            'conditions' => ['atual' => 'S']
-        ])->first();
-        
-        return $rodada->id;
     }
 
     /**
