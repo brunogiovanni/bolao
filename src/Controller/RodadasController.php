@@ -130,6 +130,9 @@ class RodadasController extends AppController
         return $this->redirect(['action' => 'index']);
     }
 
+    /**
+     * Consome API para dados de rodadas
+     */
     public function consumirAPI()
     {
         $opt = \curl_init('http://jsuol.com.br/c/monaco/utils/gestor/commons.js?file=commons.uol.com.br/sistemas/esporte/modalidades/futebol/campeonatos/dados/2019/30/dados.json');

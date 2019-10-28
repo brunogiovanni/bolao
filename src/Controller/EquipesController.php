@@ -16,12 +16,10 @@ class EquipesController extends AppController
     public function beforeFilter(Event $event)
     {
         parent::beforeFilter($event);
-
-        $this->Auth->allow('consumirApi');
     }
 
     /**
-     * Index method
+     * Lista as equipes cadastradas
      *
      * @return \Cake\Http\Response|void
      */
@@ -112,6 +110,11 @@ class EquipesController extends AppController
         return $this->redirect(['action' => 'index']);
     }
 
+    /**
+     * Consome API para dados de equipes participantes do campeonato
+     * 
+     * @return type
+     */
     public function consumirAPI()
     {
         $opt = \curl_init('http://jsuol.com.br/c/monaco/utils/gestor/commons.js?file=commons.uol.com.br/sistemas/esporte/modalidades/futebol/campeonatos/dados/2019/30/dados.json');
@@ -119,15 +122,34 @@ class EquipesController extends AppController
         $retorno = \curl_exec($opt);
         \curl_close($opt);
         $dados = json_decode($retorno);
-        $equipes = [];
+        $equipes = $idsApi = [];
         foreach ($dados->equipes as $equipe) {
-            $equipes[] = ['id_api' => $equipe->id, 'descricao' => $equipe->nome, 'brasao' => $equipe->brasao, 'ano' => date('Y')];
+            $idsApi[] = $equipe->id;
+            $equipes[$equipe->id] = ['id_api' => $equipe->id, 'descricao' => $equipe->nome, 'brasao' => $equipe->brasao, 'ano' => date('Y')];
         }
-        $entidades = $this->Equipes->newEntities($equipes);
-        if ($this->Equipes->saveMany($entidades)) {
-            $this->Flash->success('Sincronizado com sucesso!');
+        $this->_salvarDadosApi($equipes, $idsApi);
+    }
+
+    /**
+     * Salva os dados da API no banco de dados
+     * 
+     * @param array $dadosApi
+     * @param array $idsApi
+     */
+    private function _salvarDadosApi($dadosApi, $idsApi = [])
+    {
+        if (!empty($idsApi)) {
+            $equipesDB = $this->Jogos->find('all', ['conditions' => ['id IN' => $idsApi]]);
+            foreach ($equipesDB as $equipe) {
+                unset($dadosApi[$equipe->id_api]);
+            }
+        }
+        $jogos = $this->Jogos->newEntities($dadosApi);
+
+        if ($this->Jogos->saveMany($jogos)) {
+            $this->Flash->success('Sincronizado com sucesso!', ['key' => 'jogos']);
         } else {
-            $this->Flash->error('Falha ao sincronizar dados!');
+            $this->Flash->error('Falha ao sincronizar!', ['key' => 'jogos']);
         }
 
         return $this->redirect(['action' => 'index']);

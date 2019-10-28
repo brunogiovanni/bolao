@@ -56,6 +56,9 @@ class PontosController extends AppController
         $this->set(compact('pontos', 'jogo', 'jogosId'));
     }
     
+    /**
+     * Lista os pontos dos boleiros por rodada
+     */
     public function pontosPorRodada()
     {
         $rodadaAtual = $this->pegarRodadaAtual();
@@ -86,6 +89,11 @@ class PontosController extends AppController
         $this->set(compact('totalPontos', 'rodada', 'rodadas'));
     }
 
+    /**
+     * Busca partidas que já se encerraram
+     * 
+     * @return array Array de ids de jogos
+     */
     private function _verificarJogosEncerrados()
     {
         $jogos = $this->Pontos->Apostas->Jogos->find('all', [
@@ -117,6 +125,12 @@ class PontosController extends AppController
         $this->set('ponto', $ponto);
     }
 
+    /**
+     * Contabiliza os pontos da rodada ou partida
+     * 
+     * @param int|null $jogoId Código do jogo (opcional)
+     * @return type
+     */
     public function contabilizarPontos($jogoId = null)
     {
         $this->request->allowMethod(['post']);
@@ -193,6 +207,15 @@ class PontosController extends AppController
         }
     }
 
+    /**
+     * Calcula saldo de gols da partida
+     * 
+     * @param int $aposta1
+     * @param int $aposta2
+     * @param int $placar1
+     * @param int $placar2
+     * @return boolean
+     */
     private function _calcularResultado($aposta1, $aposta2, $placar1, $placar2)
     {
         $saldoGols = $placar1 - $placar2;
@@ -203,6 +226,12 @@ class PontosController extends AppController
         return false;
     }
 
+    /**
+     * Verifica se aposta já foi contabilizada
+     * 
+     * @param int $apostaId
+     * @return boolean
+     */
     private function _verificarApostaContabilizada($apostaId)
     {
         $pontos = $this->Pontos->find('all', ['conditions' => ['apostas_id' => $apostaId]]);
@@ -280,6 +309,9 @@ class PontosController extends AppController
         return $this->redirect(['action' => 'index']);
     }
 
+    /**
+     * Calcula o placar geral do bolão
+     */
     public function placarGeral()
     {
         $pontos = $this->Pontos->find('all', [

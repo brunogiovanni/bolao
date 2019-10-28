@@ -20,7 +20,7 @@ class JogosController extends AppController
     }
 
     /**
-     * Index method
+     * Exibe informações de partida por rodada
      *
      * @return \Cake\Http\Response|void
      */
@@ -186,6 +186,9 @@ class JogosController extends AppController
         return $this->redirect(['action' => 'index']);
     }
 
+    /**
+     * Consulta a API para dados de partidas
+     */
     public function consumirAPI()
     {
         $opt = \curl_init('http://jsuol.com.br/c/monaco/utils/gestor/commons.js?file=commons.uol.com.br/sistemas/esporte/modalidades/futebol/campeonatos/dados/2019/30/dados.json');
@@ -217,6 +220,12 @@ class JogosController extends AppController
         $this->_salvarDadosApi($jogos, $idsApi);
     }
 
+    /**
+     * Salva os dados da API no banco de dados
+     * 
+     * @param array $dadosApi
+     * @param array $idsApi
+     */
     private function _salvarDadosApi($dadosApi, $idsApi = [])
     {
         if (!empty($idsApi)) {

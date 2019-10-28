@@ -13,7 +13,7 @@ use App\Controller\AppController;
 class ApostasController extends AppController
 {
     /**
-     * Index method
+     * Lista apostas de usuários
      *
      * @param int $jogoId
      * @return \Cake\Http\Response|void
@@ -53,6 +53,12 @@ class ApostasController extends AppController
         $this->set(compact('apostas', 'jogo', 'prazoHora', 'horaPosJogo', 'pontos', 'users', 'rodadas'));
     }
 
+    /**
+     * Busca apostas com pontos contabilizados
+     * 
+     * @param int $jogoId Código da partida
+     * @return int Número de pontos contabilizados
+     */
     private function _verificarPontosContabilizados($jogoId)
     {
         $apostas = $this->Apostas->find('all', [
@@ -87,7 +93,7 @@ class ApostasController extends AppController
     }
 
     /**
-     * Add method
+     * Salva uma aposta (desativado)
      *
      * @param int $jogoId
      * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
@@ -158,7 +164,7 @@ class ApostasController extends AppController
     }
 
     /**
-     * Edit method
+     * Atualiza uma aposta (desativado)
      *
      * @param string|null $id Aposta id.
      * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
@@ -201,7 +207,7 @@ class ApostasController extends AppController
     }
 
     /**
-     * Delete method
+     * Apaga uma aposta (desativado)
      *
      * @param string|null $id Aposta id.
      * @return \Cake\Http\Response|null Redirects to index.
@@ -235,6 +241,9 @@ class ApostasController extends AppController
         }
     }
 
+    /**
+     * Salva apostas
+     */
     public function salvarApostas()
     {
         $this->request->allowMethod('post');
@@ -262,6 +271,12 @@ class ApostasController extends AppController
         }
     }
 
+    /**
+     * Formata os dados de apostas com informações de vencedor apostado
+     * 
+     * @param array $data
+     * @return array
+     */
     private function _completarArrayApostas(array $data)
     {
         $quantidade = count($data);
@@ -284,6 +299,12 @@ class ApostasController extends AppController
         return $dadosFormatados;
     }
 
+    /**
+     * Verifica se aposta já existe
+     * 
+     * @param array $data
+     * @return array
+     */
     private function _verificarIdAposta(array $data)
     {
         $dadosAtualizar = [];
@@ -299,6 +320,11 @@ class ApostasController extends AppController
         return $data;
     }
 
+    /**
+     * Atualiza apostas de jogador
+     * 
+     * @param array $data
+     */
     private function _atualizarApostas(array $data)
     {
         $mensagem = '';

@@ -29,6 +29,10 @@ use Cake\Core\Configure;
 class AppController extends Controller
 {
 
+    /**
+     *
+     * @var array Array de paginação de informações
+     */
     public $paginate = [
         'contain'=> [], 'conditions' => [], 'fields' => [],
         'join' => [], 'order' => [], 'group' => [],
@@ -63,32 +67,6 @@ class AppController extends Controller
         // }
         $this->configurarAuth();
         // $this->_configurarGrowlytics();
-    }
-
-    private function _configurarGrowlytics()
-    {
-        \Growlytics\Growlytics::init([
-
-            'project_id' => '46ru4om5ejuycbr5z',
-            'api_key' => '46ru4om5ejuycbr5x46ru4om5ejuycbr5y',
-
-            // Enable disable plugin, by default its enable if not provided
-            'enabled' => true,
-
-            // Make sure env matches with browser's env
-            'env' => env('APP_ENV'),
-
-
-            'skip_api_fields' => ['pwd', 'name'],
-        ]);
-
-        try {
-            // Some potentially crashy code
-        } catch (Exception $ex) {
-            $user = $this->Auth->user();
-            // You can report Error, Exception or Throwable
-            \Growlytics\Growlytics::notifyError($ex, $user);
-        }
     }
 
     /**
@@ -161,6 +139,11 @@ class AppController extends Controller
         }
     }
 
+    /**
+     * Salva logs de eventos do sistema
+     * 
+     * @param array $logs
+     */
     protected function salvarLog(array $logs)
     {
         $this->loadModel('Logs');

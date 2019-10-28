@@ -219,12 +219,17 @@ class UsersController extends AppController
     //     }
     // }
 
+    /**
+     * Desloga o usuário do sistema
+     */
     public function logout()
     {
         $this->redirect($this->Auth->logout());
     }
 
-
+    /**
+     * Cadastro público de usuários (desativado)
+     */
     public function addPublic()
     {
         $this->viewBuilder()->setLayout('login');
@@ -248,6 +253,9 @@ class UsersController extends AppController
         $this->set(compact('user'));
     }
 
+    /**
+     * Envia uma nova senha para o usuário
+     */
     public function recuperarSenha()
     {
         if ($this->request->is('post')) {
@@ -321,6 +329,9 @@ class UsersController extends AppController
         return $retorno;
     }
 
+    /**
+     * Integração com PagSeguro (desativado)
+     */
     public function pagseguro()
     {
         \PagSeguro\Library::initialize();
