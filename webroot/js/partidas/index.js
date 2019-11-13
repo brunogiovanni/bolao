@@ -51,6 +51,18 @@ function salvarApostas() {
                 });
             }
         }
+        if (adiantados) {
+        	if (($('#placar-mandante-adiantado-' + i).val() !== null && $('#placar-mandante-adiantado-' + i).val() !== '' && $('#placar-mandante-adiantado-' + i).val() !== undefined) && ($('#placar-visitante-adiantado-' + i).val() !== null && $('#placar-visitante-adiantado-' + i).val() !== '' && $('#placar-visitante-adiantado-' + i).val() !== undefined)) {
+                placares.push({
+                    id: $('#id-aposta-adiantado-' + i).val(),
+                    placar1: $('#placar-mandante-adiantado-' + i).val(),
+                    placar2: $('#placar-visitante-adiantado-' + i).val(),
+                    jogos_id: $('#jogo-id-adiantado-' + i).val(),
+                    time1: $('#time1-adiantado-' + i).val(),
+                    time2: $('#time2-adiantado-' + i).val(),
+                });
+            }
+        }
     }
 
     $.ajax({
